@@ -1,1 +1,16 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@theme {
+    --color-text-bglight: #424158;
+    --color-text-bgdark: #ffffff;
+
+    --color-light-bg: #ffffff;
+    --color-light-lazy: #DFDFF1;
+    --shadow-light: 0 -3px 4px rgba(123, 140, 232, 0.34);
+
+    --color-dark-bg: #22242F;
+    --color-dark-lazy: #2B2D37;
+
+    --color-nosy-game: #4660EC;
+}
+

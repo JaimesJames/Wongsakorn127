@@ -1,0 +1,7 @@
+<div [ngClass]="{'h-[70vh]': status, 'h-[10vh]': !status}" class="fixed w-screen rounded-t-4xl px-5 pt-25 bottom-0 bg-light-bg shadow-light">
+  <div class="grid grid-cols-2 gap-3 overflow-y-scroll scroll-smooth h-full p-10">
+    <div *ngFor="let n of getRange(20)">
+      <button class="bg-light-lazy w-full h-[96px] rounded-2xl"></button>
+    </div>
+  </div>
+</div>

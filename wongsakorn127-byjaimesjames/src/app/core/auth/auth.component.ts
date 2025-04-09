@@ -1,4 +1,3 @@
-// src/app/login-register/login-register.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '@angular/fire/auth';
@@ -7,14 +6,14 @@ import { inject } from '@angular/core';
 
 
 @Component({
-  selector: 'app-login-register',
+  selector: 'app-auth',
   standalone: true,
   imports: [CommonModule, FormsModule], 
-  templateUrl: './login-register.component.html',
-  styleUrls: ['./login-register.component.css'],
+  templateUrl: './auth.component.html',
+  styleUrls: ['./auth.component.css'],
 })
-export class LoginRegisterComponent {
-  // State variables
+export class AuthComponent {
+
   email: string = '';
   password: string = '';
   errorMessage: string = '';

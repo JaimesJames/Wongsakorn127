@@ -1,15 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NavigatorComponent } from './core/layout/navigator/navigator.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, NavigatorComponent],
   styleUrl: './app.component.css',
-  template: `
-    <main class="min-h-screen bg-gray-100 p-4">
-      <router-outlet></router-outlet>
-    </main>
-  `
+  templateUrl: './app.component.html',
 })
 export class AppComponent {
   title = 'wongsakorn127-byjaimesjames';
