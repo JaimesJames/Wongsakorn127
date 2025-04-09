@@ -1,5 +1,15 @@
 {
-    "buildCommand": "npx ng build --configuration production",
-    "outputDirectory": "dist/wongsakorn127-byjaimesjames",
-    "framework": null
+    "builds": [
+      {
+        "src": "dist/wongsakorn127-byjaimesjames/**/*",
+        "use": "@vercel/static"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "/dist/wongsakorn127-byjaimesjames/$1"
+      }
+    ]
   }
+  
