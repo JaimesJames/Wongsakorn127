@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "dist/wongsakorn127-byjaimesjames",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
