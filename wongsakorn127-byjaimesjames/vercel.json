@@ -1,5 +1,5 @@
 {
-    "buildCommand": "npx ng build --prod",
+    "buildCommand": "npx ng build --configuration production",
     "outputDirectory": "dist/wongsakorn127-byjaimesjames",
     "framework": null
   }
