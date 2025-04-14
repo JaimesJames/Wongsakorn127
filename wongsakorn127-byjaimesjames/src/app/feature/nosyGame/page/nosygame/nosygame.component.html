@@ -1,6 +1,13 @@
 <main class="w-screen h-screen bg-nosy-game flex flex-col justify-center">
-    <app-credit-badge/>
-    <div>
-        
-    </div>
+  <app-credit-badge />
+  <div>
+    <app-selection-bar
+      [selectors]="selectors"
+      [initSelected]="selectors[0].selectorId"
+      (selected)="onDropdownSelected($event)"
+    />
+  </div>
+  <h2 class="text-center text-4xl text-white my-20">{{ selectedText }}</h2>
+  <!-- <button (click)="randomQuestion()" class="bg-white w-fit m-auto my-5 py-2 px-5 text-2xl font-medium rounded-2xl text-nosy-game">Random</button> -->
+  <button (click)="addQuestion()" class="bg-white w-fit m-auto my-5 py-2 px-5 text-2xl font-medium rounded-2xl text-nosy-game">test</button>
 </main>
