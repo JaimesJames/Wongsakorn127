@@ -1,101 +1,120 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
 import { selectionBarComponent } from '../../../../share/components/input/selectionBar.component';
-import { question } from '../../data';
-import { AuthService } from '../../../../share/services/auth.service';
 import { User } from '@angular/fire/auth';
 import { QuestionService } from '../../services/question.service';
-import { QuestionSet } from '../../models/nosygame.model';
+import { QuestionsText } from '../../models/nosygame.model';
 import { Selector } from '../../../../share/models/share.model';
+import { EditListComponent } from '../../components/editList.component';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-nosygame',
-  imports: [CreditBadgeComponent, selectionBarComponent],
+  imports: [CreditBadgeComponent, selectionBarComponent, EditListComponent, CommonModule, RouterModule],
   templateUrl: './nosygame.component.html',
   styleUrl: './nosygame.component.css',
   standalone: true
 })
-export class NosygameComponent {
+export class NosygameComponent implements OnInit{
   user: User | null = null;
 
   constructor(
-    private authService: AuthService,
-    private questionService: QuestionService
+    private questionService: QuestionService,
+    private router: Router, 
+    private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {
-    this.authService.getCurrentUser().subscribe(user => {
-      this.user = user;
-      console.log('User:', this.user);
-  
-      if (this.user) {
-       
-      }
-    }); 
-    this.getQuestionSet();
+  isEditMode: Boolean = false;
+
+  async ngOnInit() {
+    const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
+    this.isEditMode = currentMode === 'edit'
+
+    const data = await this.questionService.getAllQuestionSet();
+    if (data) {
+      this.selectors = data.map((e) => {
+        return {
+          sequence: 0,
+          text: e.name,
+          selectorId: e.id
+        }
+      })
+      this.selectedValue = data[0].id
+      this.questions = await this.questionService.getQuestions(data[0].id)
+      if (currentMode === 'game') this.randomQuestion()
+    }
+    
   }
 
-  selectors:Selector[] = [{
+  selectors: Selector[] = [{
     sequence: 0,
     text: '',
     selectorId: ''
   }];
 
   selectedValue = '';
-  selectedText: string = '';
+  selectedQuestion: QuestionsText = {
+    id: '',
+    level: 0,
+    text: ''
+  };
 
-  questions = question[0];
-  previousQuestions: string[] = [];
+  questions: QuestionsText[] = [];
+  previousQuestions: QuestionsText[] = [];
 
-
-  onDropdownSelected(value: string) {
+  async onDropdownSelected(value: string) {
     try {
       this.selectedValue = value;
-      const foundQuestion = question.find(e => e.id === this.selectedValue);
-      if (foundQuestion) {
-        this.questions = foundQuestion;
-        // this.randomQuestion()
-      } else {
-        console.warn('Question not found for the selected value');
-        this.questions = question[0];
-      }
+      this.questions = await this.questionService.getQuestions(this.selectedValue)
+      this.previousQuestions = [];
+      if (!this.isEditMode) this.randomQuestion()
     } catch (error) {
       console.error('An error occurred while processing the selection:', error);
     }
   }
-  // randomQuestion() {
-  //   if (this.questions.text.length > 0){
-  //     const randomIndex = Math.floor(Math.random() * this.questions.text.length);
-  //     this.selectedText = this.questions.text.splice(randomIndex, 1)[0];
 
-  //     this.previousQuestions.push(this.selectedText);
-  //   }
-  //   else {
-  //     this.questions.text = [...this.previousQuestions];
-  //     this.previousQuestions = [];
-  //     this.randomQuestion(); 
-  //   }
-  // }
+  randomQuestion() {
+    if (this.questions.length > 0){
+      const randomIndex = Math.floor(Math.random() * this.questions.length);
+      this.selectedQuestion = this.questions[randomIndex];
+      this.previousQuestions.push(this.questions[randomIndex]);
+      this.questions.splice(randomIndex,1)
+      
+    }
+    else {
+      this.questions = [...this.previousQuestions];
+      this.previousQuestions = [];
+      this.randomQuestion()
+    }
+  }
 
   async addQuestion() {
-    await this.questionService.addQuestionToSet(
-      'questionsSet1',
-      'คำถามตัวอย่าง',
-      'คำตอบตัวอย่าง'
-    )
+    await this.questionService.addQuestionToSet("NGS001", [{
+      level: 0,
+      text: ''
+    }])
   }
 
-  async getQuestionSet() {
-    const data = await this.questionService.getAllQuestionSet();
-    console.log(data,"ll");
-    this.selectors = data.map((e)=>{
-      return {
-        sequence: 0,
-        text: e.name,
-        selectorId: e.id
-      }
+  async addQuestionSet() {
+    await this.questionService.addQuestionSet("setName", [{
+      level: 0,
+      text: ''
+    }])
+  }
+
+  async getQuestions(questionSetId: string) {
+    this.questions = await this.questionService.getQuestions(questionSetId)
+  }
+
+  async changeMode(){
+    const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
+    this.router.navigate(['/nosy-game'], {
+      queryParams: {mode: currentMode === "game" ? "edit" : "game"}
     })
-    const test = await this.questionService.getQuestions(this.selectors[0].selectorId)
+    this.questions = await this.questionService.getQuestions(this.selectedValue)
+    this.isEditMode = !this.isEditMode
   }
-
 }
+
+

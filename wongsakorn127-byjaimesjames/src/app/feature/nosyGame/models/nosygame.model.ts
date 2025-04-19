@@ -1,26 +1,22 @@
-export interface Question {
-    id: string;
-    text: string[];
-}
 
 export interface QuestionSet {
     id: string;
     name: string;
-    createdFromDefault: boolean;
     createdAt: {
         seconds: number;
         nanoseconds: number;
     };
 }
 
-export interface QuestionsText {
-    id: string;
+export interface QuestionDetail {
     level: number;
     text: string;
 }
 
-export interface QuestionSetResponse {
-    questionSets: QuestionSet[];
-    questionsText: QuestionsText[];
-    error: string | null;
+export interface QuestionsText extends QuestionDetail {
+    id: string;
+}
+
+export interface CurrentValue extends QuestionsText {
+    isEditing: boolean
 }

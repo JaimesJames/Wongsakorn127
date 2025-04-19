@@ -1,124 +1,192 @@
 import { inject, Injectable } from '@angular/core';
-import { Firestore, collection, doc, getDocs, setDoc, Timestamp, collectionData } from '@angular/fire/firestore';
-import { Auth, User } from '@angular/fire/auth';
+import { Firestore, collection, doc, getDocs, getDoc, setDoc, Timestamp, collectionData, updateDoc, deleteDoc, writeBatch } from '@angular/fire/firestore';
 import { v4 as uuid } from 'uuid';
-import { Observable,firstValueFrom } from 'rxjs';
-
 import { AuthService } from '../../../share/services/auth.service';
-import { QuestionSet, QuestionsText, QuestionSetResponse } from '../models/nosygame.model';
+import { QuestionDetail, QuestionSet, QuestionsText } from '../models/nosygame.model';
+import { convertDocToQuestions, convertDocToQuestionSet } from './question.util';
 
 @Injectable({
   providedIn: 'root'
 })
 export class QuestionService {
+
+  constructor(
+    private authService: AuthService
+  ) { }
   private firestore = inject(Firestore);
-  private auth = inject(Auth);
-  
-  async getAllQuestionSet(): Promise<QuestionSet[]> {
-    const user = await new Promise<User | null>((resolve) => {
-      this.auth.onAuthStateChanged(resolve);
-    });
-  
-    const convertDocToQuestionSet = (doc: any): QuestionSet => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name,
-        createdFromDefault: data.createdFromDefault,
-        createdAt: data.createdAt instanceof Timestamp
-          ? data.createdAt.toDate()
-          : new Date(data.createdAt),
-      };
-    };
 
-  
-    if (!user) {
-      const defaultRef = collection(this.firestore, 'initializer/game-nosy-game/question-set');
-      const snapshot = await getDocs(defaultRef);
-      return snapshot.docs.map(convertDocToQuestionSet);
+  async getAllQuestionSet(): Promise<QuestionSet[] | null> {
+    try {
+      const user = await this.authService.getCurrentUser()
+
+      if (!user) {
+        const initializerRef = collection(this.firestore, 'initializer/game-nosy-game/question-set');
+        const snapshot = await getDocs(initializerRef);
+        return snapshot.docs.map(convertDocToQuestionSet);
+      }
+
+      const personalSetRef = collection(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set`);
+      const snapshot = await getDocs(personalSetRef);
+      if (snapshot.empty) {
+
+        await this.addInitializerQuestion([], user.uid)
+      }
+
+      const updatedSnapshot = await getDocs(personalSetRef);
+      return updatedSnapshot.docs.map(convertDocToQuestionSet);
+    } catch (error) {
+      console.log(error)
+      throw new Error("Something went wrong");
     }
-  
-    const userSetRef = collection(this.firestore, `users/${user.uid}/game-nosy-game/`);
-    const snapshot = await getDocs(userSetRef);
-  
-    if (snapshot.empty) {
-      const defaultRef = collection(this.firestore, 'initializer/game-nosy-game/question-set');
-      const defaultSnapshot = await getDocs(defaultRef);
-      const newDocRef = doc(userSetRef);
-      const batch = defaultSnapshot.docs.map(docSnap => {
-        const data = docSnap.data();
-        
-        return setDoc(newDocRef, {
-          ...data,
-          createdFromDefault: true,
-          createdAt: new Date()
-        });
-      });
-  
-      await Promise.all(batch);
-
-      // const QuestionRef = collection(this.firestore, `users/${user.uid}/game-nosy-game/${newDocRef.id}/questions`);
-      // const newDocQuestionRef = doc(QuestionRef);
-
-      // const Questionbatch = defaultSnapshot.docs.map(docSnap => {
-      //   const data = docSnap.data();
-      //   const defaultQuestionRef = collection(this.firestore, `initializer/game-nosy-game/question-set/${docSnap.id}/questions`);
-      //   const defaultQuestionSnapshot = getDocs(defaultQuestionRef);
-      //   return setDoc(newDocQuestionRef, {
-      //   ...data,
-      //   createdFromDefault: true,
-      //   createdAt: new Date()
-      // });
-      // });
-  
-      // await Promise.all(batch);
-      
-      
-      
-    }
-  
-    const updatedSnapshot = await getDocs(userSetRef);
-    return updatedSnapshot.docs.map(convertDocToQuestionSet);
   }
 
-  async getQuestions(setId:string): Promise<QuestionsText[]>{
-    const user = await new Promise<User | null>((resolve)=>{
-      this.auth.onAuthStateChanged(resolve);
-    })
+  async getQuestions(setId: string): Promise<QuestionsText[]> {
+    const user = await this.authService.getCurrentUser()
     if (!user) {
       const defaultRef = collection(this.firestore, `initializer/game-nosy-game/question-set/${setId}/questions`);
       const snapshot = await getDocs(defaultRef);
-      console.log(snapshot.docs.map(qDoc => ({
-        id: qDoc.id,
-        ...qDoc.data()
-      })))
-      return snapshot.docs.map(qDoc =>{
-        const data = qDoc.data() as QuestionsText
-        return{
-        id: qDoc.id,
-        text: data.text,
-        level: data.level
-      }
-      })
+      return snapshot.docs.map(convertDocToQuestions)
     }
-    const defaultRef = collection(this.firestore, `users/${user.uid}/game-nosy-game/question-set/${setId}/questions`);
-    return []
+    const userRef = collection(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions`);
+    const snapshot = await getDocs(userRef);
+    return snapshot.docs.map(convertDocToQuestions)
   }
 
-  async addQuestionToSet(setName: string, question: string, answer: string): Promise<void> {
-    const user = this.auth.currentUser;
-    if (!user) throw new Error('ต้องล็อกอินก่อน');
+  async addQuestionToSet(setId: string, questions: QuestionDetail[]): Promise<void> {
+    try {
+      const user = await this.authService.getCurrentUser()
+      if (!user) throw new Error('Please log in');
 
-    const questionId = uuid();  // หรือใช้ addDoc ก็ได้ แต่ setDoc จะใช้ path ตรงนี้
+      const batch = writeBatch(this.firestore)
 
-    const questionRef = doc(this.firestore,
-      `users/${user.uid}/${setName}/${questionId}`
-    );
+      questions.forEach(question => {
 
-    await setDoc(questionRef, {
-      question,
-      answer,
-      createdAt: new Date()
-    });
+        const questionId = uuid();
+        const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${questionId}`);
+
+        batch.set(questionRef, question);
+      })
+
+      await batch.commit();
+
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+  }
+
+  async addQuestionSet(setName: string, questions: QuestionDetail[]): Promise<void> {
+    try {
+      const user = await this.authService.getCurrentUser()
+      if (!user) throw new Error('Please log in');
+      const questionSetId = uuid();
+      const questionSetRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${questionSetId}`);
+
+      await setDoc(questionSetRef, {
+        name: setName,
+        createdAt: new Date()
+      });
+      await this.addQuestionToSet(questionSetId, questions)
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+
+  }
+
+  async addInitializerQuestion(except: string[], userId: string): Promise<void> {
+    try {
+      const questionSetRef = collection(this.firestore, 'initializer/game-nosy-game/question-set');
+      const snapshot = await getDocs(questionSetRef);
+
+      const promises = snapshot.docs.map(async (docSnap) => {
+        if (!except.includes(docSnap.id)) {
+          console.log(docSnap.id, "ii")
+          const data = docSnap.data()
+
+          const QuestionsRef = collection(this.firestore, `initializer/game-nosy-game/question-set/${docSnap.id}/questions`);
+          const snapshot = await getDocs(QuestionsRef);
+
+          const userQuestionSetRef = doc(this.firestore, `users/${userId}/games/game-nosy-game/question-set/${docSnap.id}`)
+          await setDoc(userQuestionSetRef, {
+            ...data,
+            createdFromDefault: true,
+            createdAt: new Date()
+          });
+
+          const questionPromises = snapshot.docs.map(async (questionSnap) => {
+            const questionData = questionSnap.data();
+            const userQuestionsRef = collection(this.firestore, `users/${userId}/games/game-nosy-game/question-set/${docSnap.id}/questions`);
+            const newUserQuestionsRef = doc(userQuestionsRef);
+            await setDoc(newUserQuestionsRef, {
+              ...questionData,
+              createdFromDefault: true,
+              createdAt: new Date(),
+            });
+          });
+
+          await Promise.all(questionPromises);
+
+        }
+      })
+      await Promise.all(promises)
+
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+  }
+
+  async updateQuestion(setId: string, questionId: string, question?: string, level?: number) {
+    try {
+      const user = await this.authService.getCurrentUser()
+      if (!user) throw new Error('Please log in');
+
+      const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${questionId}`);
+
+      const updateData: any = {
+        updatedAt: new Date(),
+      };
+
+      if (question !== undefined) updateData.text = question;
+      if (level !== undefined) updateData.level = level;
+
+      await updateDoc(questionRef, updateData);
+
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+  }
+
+  async deleteQuestion(setId: string, questionId: string) {
+    try {
+      const user = await this.authService.getCurrentUser()
+      if (!user) throw new Error('Please log in');
+
+      const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${questionId}`);
+
+      await deleteDoc(questionRef);
+
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+  }
+
+  async deleteQuestionSet(setId: string) {
+    try {
+      const user = await this.authService.getCurrentUser()
+      if (!user) throw new Error('Please log in');
+
+      const questionsRef = collection(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions`);
+      const snapshot = await getDocs(questionsRef);
+      const deleteQuestionsPromises = snapshot.docs.map(docSnap => {
+        const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${docSnap.id}`);
+        deleteDoc(questionRef);
+      })
+
+      Promise.all(deleteQuestionsPromises)
+      const questionSetRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}`);
+      deleteDoc(questionSetRef);
+
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
   }
 }

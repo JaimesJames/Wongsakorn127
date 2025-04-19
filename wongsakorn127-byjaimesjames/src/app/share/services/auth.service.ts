@@ -15,7 +15,7 @@ export class AuthService {
 
   private auth: Auth = inject(Auth);
 
-  user$: Observable<User | null> = authState(this.auth);
+  // user$: Observable<User | null> = authState(this.auth);
 
   login(email: string, password: string) {
     return signInWithEmailAndPassword(this.auth, email, password);
@@ -25,7 +25,12 @@ export class AuthService {
     return signOut(this.auth);
   }
 
-  getCurrentUser(): Observable<User | null> {
-    return this.user$;
+  getCurrentUser(): Promise<User | null> {
+    return new Promise((resolve) => {
+      this.auth.onAuthStateChanged(resolve)
+    })
   }
+  // getCurrentUser(): Observable<User | null> {
+  //   return this.user$;
+  // }
 }
