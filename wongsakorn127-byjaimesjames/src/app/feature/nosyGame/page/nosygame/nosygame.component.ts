@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
 import { selectionBarComponent } from '../../../../share/components/input/selectionBar.component';
 import { User } from '@angular/fire/auth';
@@ -6,7 +6,7 @@ import { QuestionService } from '../../services/question.service';
 import { QuestionsText } from '../../models/nosygame.model';
 import { Selector } from '../../../../share/models/share.model';
 import { EditListComponent } from '../../components/editList.component';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -22,12 +22,15 @@ export class NosygameComponent implements OnInit{
   constructor(
     private questionService: QuestionService,
     private router: Router, 
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   isEditMode: Boolean = false;
 
   async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
     this.isEditMode = currentMode === 'edit'
 
