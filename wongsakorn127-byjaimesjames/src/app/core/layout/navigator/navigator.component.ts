@@ -30,7 +30,7 @@ export class NavigatorComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const mode = params['mode'];
       const currentUrl = this.router.url.split('?')[0];
-      this.status = 'show';
+      this.status = 'pre-hide';
       setTimeout(() => {
         if (mode === 'edit') {
           this.status = 'hide';
