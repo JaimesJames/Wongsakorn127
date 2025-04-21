@@ -10,7 +10,7 @@
   <div
     class="grid grid-cols-2 gap-3 overflow-y-scroll scroll-smooth hide-scrollbar"
   >
-    <a [routerLink]="['/nosy-game']">
+    <a [routerLink]="['/nosy-game']" [queryParams]="{mode:'game'}">
       <button class="bg-nosy-game w-full h-[96px] rounded-2xl font-semibold text-xl text-light-bg">Nosy Game</button>
     </a>
     <a [routerLink]="['/kinglee-game']">
