@@ -3,79 +3,96 @@ import { Component, EventEmitter, Input, Output, ElementRef, ViewChild, SimpleCh
 import { QuestionsText, CurrentValue, QuestionDetail } from '../models/nosygame.model';
 import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { ConfirmDialogComponent } from '../../../share/components/dialog/confirmDialog.component';
+import { combineLatest } from 'rxjs';
 
 @Component({
-    selector: 'app-question-edit-item',
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, TextFieldModule],
-    template: `
+  selector: 'app-question-edit-item',
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TextFieldModule, ConfirmDialogComponent],
+  template: `
   <div [ngClass]="{'bg-[#CAFF74]':isAdding, 'bg-light-bg' : !isAdding}" class="flex w-full rounded-3xl px-5 py-4 items-center gap-5"> 
     <textarea cdkTextareaAutosize [formControl]="questionControl" class="text-black w-full focus:outline-none focus:ring-0 h-fit"></textarea>
-    <input type="text" [formControl]="levelControl" [ngClass]="{'border-[#33374B]/20':isAdding, 'border-[#E7E9F4]' : !isAdding}" class="text-black w-15 text-center border-l-2 border-r-2 px-3 focus:outline-none focus:ring-0"/>
+    <input type="number" [formControl]="levelControl" [ngClass]="{'border-[#33374B]/20':isAdding, 'border-[#E7E9F4]' : !isAdding}" class="text-black w-15 text-center border-l-2 border-r-2 px-3 focus:outline-none focus:ring-0"/>
     <button (click)="undo()" [ngClass]="{'hidden': !isEditing || isAdding && !isAdded}">
         <img src="/svg/undo.svg" class="w-8" alt="undo"/>
     </button>
     <button (click)="submit()" [ngClass]="{'hidden': isEditing || isAdding && !isAdded}">
         <img src="/svg/remove-list.svg" class="w-8" alt="undo"/>
     </button>
-    <button (click)="submit()" [ngClass]="{'hidden': !isAdding || isAdded, 'opacity-50': !isEditing}" [disabled]="!isEditing">
+    <button (click)="submit()" [ngClass]="{'hidden': !isAdding || isAdded, 'opacity-50': !isEditing || questionControl.value == ''}" [disabled]="!isEditing || questionControl.value == ''">
         <img src="/svg/submit.svg" class="w-8" alt="edit"/>
     </button>
   </div>
+  <app-confirm-dialog></app-confirm-dialog>
   `,
-    styles: ``,
-    standalone: true
+  styles: ``,
+  standalone: true
 })
 export class QuestionEditItemComponent {
-    isEditing: boolean = false
+  isEditing: boolean = false
 
-    @Input() item: QuestionsText = {
-        id: '',
-        level: 0,
-        text: ''
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @Input() item: QuestionsText = {
+    id: '',
+    level: 0,
+    text: ''
+  }
+  @Input() isAdding: boolean = false
+  @Input() isAdded: boolean = false
+
+  @Output() currentValue = new EventEmitter<CurrentValue>();
+  @Output() submitItem = new EventEmitter<QuestionsText>();
+
+  questionControl = new FormControl('');
+  levelControl = new FormControl(0);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['item']) {
+      this.questionControl.setValue(this.item.text);
+      this.levelControl.setValue(this.item.level);
     }
-    @Input() isAdding: boolean = false
-    @Input() isAdded: boolean = false
+  }
 
-    @Output() currentValue = new EventEmitter<CurrentValue>();
-    @Output() submitItem = new EventEmitter<QuestionsText>();
+  ngOnInit() {
+    combineLatest([
+      this.questionControl.valueChanges,
+      this.levelControl.valueChanges,
+    ]).subscribe(([textVal, levelVal]) => {
+      const text = textVal ?? '';
+      const level = levelVal ?? 0;
 
-    questionControl = new FormControl('');
-    levelControl = new FormControl(0);
+      const isTextChanged = text !== this.item.text;
+      const isLevelChanged = level !== this.item.level;
+      const isChanged = isTextChanged || isLevelChanged;
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes['item']) {
-          this.questionControl.setValue(this.item.text);
-          this.levelControl.setValue(this.item.level);
-        }
-      }
+      this.currentValue.emit({
+        id: this.item.id,
+        level,
+        text,
+        isEditing: isChanged
+      });
 
-    ngOnInit() {
-        this.questionControl.valueChanges.subscribe((value) => {
-          const text = value || '';
-          const isChanged = text !== this.item.text;
-          this.currentValue.emit({
-            id: this.item.id,
-            level: this.item.level,
-            text: text,
-            isEditing: isChanged
-          });
-          this.isEditing = isChanged;
-        });
-      }
+      this.isEditing = isChanged;
+      
+    });
 
-    submit() {
-        this.submitItem.emit({
-            id: this.item.id,
-            level: this.levelControl.value || this.item.level,
-            text: this.questionControl.value || this.item.text,
-        })
-        this.questionControl.setValue(this.item.text)
-        this.levelControl.setValue(this.item.level)
-    }
+    this.questionControl.setValue(this.item.text);
+    this.levelControl.setValue(this.item.level);
+  }
 
-    undo() {
-        this.questionControl.setValue(this.item.text)
-        this.levelControl.setValue(this.item.level)
-    }
+  submit() {
+    this.submitItem.emit({
+      id: this.item.id,
+      level: this.levelControl.value || this.item.level,
+      text: this.questionControl.value || this.item.text,
+    })
+    this.questionControl.setValue(this.item.text)
+    this.levelControl.setValue(this.item.level)
+  }
+
+  undo() {
+    this.questionControl.setValue(this.item.text)
+    this.levelControl.setValue(this.item.level)
+  }
 
 }

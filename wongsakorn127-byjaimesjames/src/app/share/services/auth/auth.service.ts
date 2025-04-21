@@ -13,9 +13,7 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
 
-  private auth: Auth = inject(Auth);
-
-  // user$: Observable<User | null> = authState(this.auth);
+  constructor(private auth: Auth) {}
 
   login(email: string, password: string) {
     return signInWithEmailAndPassword(this.auth, email, password);
@@ -30,7 +28,5 @@ export class AuthService {
       this.auth.onAuthStateChanged(resolve)
     })
   }
-  // getCurrentUser(): Observable<User | null> {
-  //   return this.user$;
-  // }
+
 }

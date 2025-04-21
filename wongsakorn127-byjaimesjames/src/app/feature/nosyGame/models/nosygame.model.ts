@@ -20,3 +20,10 @@ export interface QuestionsText extends QuestionDetail {
 export interface CurrentValue extends QuestionsText {
     isEditing: boolean
 }
+
+export interface RequestSet {
+    setName: string;
+    create: QuestionDetail[],
+    update: QuestionsText[],
+    delete: string[]
+}

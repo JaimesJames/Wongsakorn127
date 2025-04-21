@@ -1,1 +1,9 @@
-<p>home works!</p>
+<main
+  class="w-screen h-screen bg-light-bg flex flex-col p-10 text-center overflow-hidden transition-all duration-300 justify-start"
+  [ngClass]="{
+    'pt-[40vh] gap-20': isLoading,
+    'pt-40 gap-5': !isLoading ,
+  }"
+>
+  <app-credit-badge [isLight]="true"></app-credit-badge>
+</main>

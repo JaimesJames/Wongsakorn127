@@ -4,7 +4,7 @@ import { ParamsGuard } from './guards/params.guard';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./feature/initial/page/home/home.component').then(m => m.HomeComponent)
+    loadComponent: () => import('./feature/initial/page/home/home.component').then(m => m.HomeComponent),
   },
   {
     path: 'auth',

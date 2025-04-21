@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Firestore, collection, doc, getDocs, getDoc, setDoc, Timestamp, collectionData, updateDoc, deleteDoc, writeBatch } from '@angular/fire/firestore';
 import { v4 as uuid } from 'uuid';
-import { AuthService } from '../../../share/services/auth.service';
-import { QuestionDetail, QuestionSet, QuestionsText } from '../models/nosygame.model';
+import { AuthService } from '../../../share/services/auth/auth.service';
+import { QuestionDetail, QuestionSet, QuestionsText, RequestSet } from '../models/nosygame.model';
 import { convertDocToQuestions, convertDocToQuestionSet } from './question.util';
 
 @Injectable({
@@ -11,9 +11,9 @@ import { convertDocToQuestions, convertDocToQuestionSet } from './question.util'
 export class QuestionService {
 
   constructor(
-    private authService: AuthService
-  ) { }
-  private firestore = inject(Firestore);
+    private authService: AuthService,
+    private firestore: Firestore
+  ) {}
 
   async getAllQuestionSet(): Promise<QuestionSet[] | null> {
     try {
@@ -52,7 +52,7 @@ export class QuestionService {
     return snapshot.docs.map(convertDocToQuestions)
   }
 
-  async addQuestionToSet(setId: string, questions: QuestionDetail[]): Promise<void> {
+  async addQuestionsToSet(setId: string, questions: QuestionDetail[]): Promise<void> {
     try {
       const user = await this.authService.getCurrentUser()
       if (!user) throw new Error('Please log in');
@@ -64,7 +64,10 @@ export class QuestionService {
         const questionId = uuid();
         const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${questionId}`);
 
-        batch.set(questionRef, question);
+        batch.set(questionRef, {
+          text: question.text,
+          level: question.level
+        });
       })
 
       await batch.commit();
@@ -85,7 +88,7 @@ export class QuestionService {
         name: setName,
         createdAt: new Date()
       });
-      await this.addQuestionToSet(questionSetId, questions)
+      await this.addQuestionsToSet(questionSetId, questions)
     } catch (error) {
       throw new Error("Something went wrong");
     }
@@ -134,35 +137,47 @@ export class QuestionService {
     }
   }
 
-  async updateQuestion(setId: string, questionId: string, question?: string, level?: number) {
+  async updateQuestions(setId: string, questions: QuestionsText[]) {
     try {
       const user = await this.authService.getCurrentUser()
       if (!user) throw new Error('Please log in');
 
-      const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${questionId}`);
+      const batch = writeBatch(this.firestore)
 
-      const updateData: any = {
-        updatedAt: new Date(),
-      };
+      questions.forEach((question) => {
 
-      if (question !== undefined) updateData.text = question;
-      if (level !== undefined) updateData.level = level;
+        const updateData: any = {
+          updatedAt: new Date(),
+        };
 
-      await updateDoc(questionRef, updateData);
+        if (question.text !== undefined) updateData.text = question.text;
+        if (question.level !== undefined) updateData.level = question.level;
+
+        const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${question.id}`);
+
+        batch.update(questionRef, updateData);
+      })
+
+      await batch.commit();
 
     } catch (error) {
       throw new Error("Something went wrong");
     }
   }
 
-  async deleteQuestion(setId: string, questionId: string) {
+  async deleteQuestions(setId: string, questionId: string[]) {
     try {
       const user = await this.authService.getCurrentUser()
       if (!user) throw new Error('Please log in');
 
-      const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${questionId}`);
+      const batch = writeBatch(this.firestore)
 
-      await deleteDoc(questionRef);
+      questionId.forEach(id => {
+        const questionRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions/${id}`);
+        batch.delete(questionRef);
+      })
+
+      await batch.commit();
 
     } catch (error) {
       throw new Error("Something went wrong");
@@ -181,12 +196,39 @@ export class QuestionService {
         deleteDoc(questionRef);
       })
 
-      Promise.all(deleteQuestionsPromises)
+      await Promise.all(deleteQuestionsPromises)
       const questionSetRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}`);
-      deleteDoc(questionSetRef);
+      await deleteDoc(questionSetRef);
 
     } catch (error) {
       throw new Error("Something went wrong");
+    }
+  }
+
+  async reNameQuestionSetName (setId:string, newName:string){
+    try {
+      const user = await this.authService.getCurrentUser()
+      if (!user) throw new Error('Please log in');
+
+      const questionSetRef = doc(this.firestore, `users/${user.uid}/games/game-nosy-game/question-set/${setId}`);
+      await setDoc(questionSetRef, {
+        name: newName,
+        updatedAt: new Date()
+      });
+
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+  }
+
+  async submitRequestSet(setId: string, request: RequestSet) {
+    try {
+      if(request.setName != '') await this.reNameQuestionSetName(setId, request.setName)
+      if(request.create.length > 0) await this.addQuestionsToSet(setId, request.create)
+      if(request.update.length > 0) await this.updateQuestions(setId, request.update)
+      if(request.delete.length > 0) await this.deleteQuestions(setId, request.delete)
+    } catch (error) {
+      throw new Error("Something went wrong at request");
     }
   }
 }

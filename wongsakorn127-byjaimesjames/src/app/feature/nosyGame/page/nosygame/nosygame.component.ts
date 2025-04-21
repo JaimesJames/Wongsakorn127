@@ -1,54 +1,36 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
 import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
 import { selectionBarComponent } from '../../../../share/components/input/selectionBar.component';
-import { User } from '@angular/fire/auth';
 import { QuestionService } from '../../services/question.service';
-import { QuestionsText } from '../../models/nosygame.model';
+import { QuestionsText, RequestSet } from '../../models/nosygame.model';
 import { Selector } from '../../../../share/models/share.model';
 import { EditListComponent } from '../../components/editList.component';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ConfirmDialogComponent } from '../../../../share/components/dialog/confirmDialog.component';
+import { InitialLoadingComponent } from '../../../../share/components/loading/initialLoading.component';
 
 @Component({
   selector: 'app-nosygame',
-  imports: [CreditBadgeComponent, selectionBarComponent, EditListComponent, CommonModule, RouterModule],
+  imports: [CreditBadgeComponent, selectionBarComponent, EditListComponent, CommonModule, RouterModule, ConfirmDialogComponent, InitialLoadingComponent],
   templateUrl: './nosygame.component.html',
   styleUrl: './nosygame.component.css',
   standalone: true
 })
-export class NosygameComponent implements OnInit{
-  user: User | null = null;
+export class NosygameComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(EditListComponent) editList!: EditListComponent;
 
   constructor(
     private questionService: QuestionService,
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
-  isEditMode: Boolean = false;
+  isEditMode: boolean = false;
+  isCreateSet: boolean = false;
 
-  async ngOnInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
-    this.isEditMode = currentMode === 'edit'
-
-    const data = await this.questionService.getAllQuestionSet();
-    if (data) {
-      this.selectors = data.map((e) => {
-        return {
-          sequence: 0,
-          text: e.name,
-          selectorId: e.id
-        }
-      })
-      this.selectedValue = data[0].id
-      this.questions = await this.questionService.getQuestions(data[0].id)
-      if (currentMode === 'game') this.randomQuestion()
-    }
-    
-  }
 
   selectors: Selector[] = [{
     sequence: 0,
@@ -56,6 +38,7 @@ export class NosygameComponent implements OnInit{
     selectorId: ''
   }];
 
+  selectedSetName = ''
   selectedValue = '';
   selectedQuestion: QuestionsText = {
     id: '',
@@ -66,24 +49,65 @@ export class NosygameComponent implements OnInit{
   questions: QuestionsText[] = [];
   previousQuestions: QuestionsText[] = [];
 
-  async onDropdownSelected(value: string) {
+  isLoading: boolean = true;
+
+  async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
+    this.isEditMode = currentMode === 'edit'
+
+    this.isLoading = true;
+
     try {
-      this.selectedValue = value;
+      const data = await this.questionService.getAllQuestionSet();
+      if (data) {
+        this.selectors = data.map((e) => {
+          return {
+            sequence: 0,
+            text: e.name,
+            selectorId: e.id
+          }
+        })
+        this.selectedValue = data[0].id
+        this.selectedSetName = this.selectors[0].text
+        this.questions = await this.questionService.getQuestions(data[0].id)
+        if (currentMode === 'game') this.randomQuestion()
+      }
+    } catch (error) {
+      console.error("Error loading data", error);
+
+    } finally {
+      setTimeout(() => {
+        this.isLoading = false
+      }, 1000);
+    }
+ 
+  }
+  async onDropdownSelected(item: { value: string, text: string }) {
+    this.isLoading = true;
+    try {
+      this.selectedValue = item.value;
       this.questions = await this.questionService.getQuestions(this.selectedValue)
+      this.selectedSetName = item.text
       this.previousQuestions = [];
       if (!this.isEditMode) this.randomQuestion()
     } catch (error) {
       console.error('An error occurred while processing the selection:', error);
+    } finally{
+      setTimeout(() => {
+        this.isLoading = false
+      }, 1000);
     }
   }
 
   randomQuestion() {
-    if (this.questions.length > 0){
+    if (this.questions.length > 0) {
       const randomIndex = Math.floor(Math.random() * this.questions.length);
       this.selectedQuestion = this.questions[randomIndex];
       this.previousQuestions.push(this.questions[randomIndex]);
-      this.questions.splice(randomIndex,1)
-      
+      this.questions.splice(randomIndex, 1)
+
     }
     else {
       this.questions = [...this.previousQuestions];
@@ -92,31 +116,82 @@ export class NosygameComponent implements OnInit{
     }
   }
 
-  async addQuestion() {
-    await this.questionService.addQuestionToSet("NGS001", [{
-      level: 0,
-      text: ''
-    }])
-  }
-
-  async addQuestionSet() {
-    await this.questionService.addQuestionSet("setName", [{
-      level: 0,
-      text: ''
-    }])
-  }
-
-  async getQuestions(questionSetId: string) {
-    this.questions = await this.questionService.getQuestions(questionSetId)
-  }
-
-  async changeMode(){
+  async changeMode() {
     const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
+
+    if (currentMode === "edit") {
+      const isEditing = this.editList.isEnableSave
+      if (isEditing) {
+        const confirmed = await this.confirmDialog.open(
+          'Exit Edit Mode',
+          'all change would not save'
+        );
+        if (!confirmed) {
+          return
+        }
+      }
+      window.location.href = '/nosy-game';
+    }
+
     this.router.navigate(['/nosy-game'], {
-      queryParams: {mode: currentMode === "game" ? "edit" : "game"}
+      queryParams: { mode: currentMode === "game" ? "edit" : "game" }
     })
     this.questions = await this.questionService.getQuestions(this.selectedValue)
     this.isEditMode = !this.isEditMode
+  }
+
+  async sendRequest(request: RequestSet) {
+    this.isLoading = true;
+    try {
+      if (this.isCreateSet) {
+        const confirmed = await this.confirmDialog.open(
+          'Create new set',
+          'click continue to create'
+        );
+        if (!confirmed) {
+          return
+        }
+        await this.questionService.addQuestionSet(request.setName, request.create)
+        window.location.href = '/nosy-game';
+      }
+      else {
+        const confirmed = await this.confirmDialog.open(
+          'Update set',
+          'click continue to update'
+        );
+        if (!confirmed) {
+          return
+        }
+        await this.questionService.submitRequestSet(this.selectedValue, request)
+        window.location.reload();
+      }
+    }
+    catch (error) {
+
+    } finally{
+      this.isLoading = false
+    }
+
+  }
+
+  async removeSet(setId: string) {
+    this.isLoading = true;
+    try {
+      const confirmed = await this.confirmDialog.open(
+        'Remove Entire Set ?',
+        'click continue to removed entire set'
+      );
+      if (!confirmed) {
+        return
+      }
+      await this.questionService.deleteQuestionSet(setId)
+      window.location.href = '/nosy-game';
+    } catch (error) {
+
+    } finally{
+      this.isLoading = false
+    }
+
   }
 }
 

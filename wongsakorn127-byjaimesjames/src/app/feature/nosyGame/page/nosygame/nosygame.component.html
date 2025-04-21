@@ -1,54 +1,86 @@
 <main
-  class="w-screen h-screen bg-nosy-game flex flex-col gap-10 p-10 pt-50 text-center"
+  class="w-screen h-screen bg-nosy-game flex flex-col p-10 text-center overflow-hidden transition-all duration-300 justify-start"
+  [ngClass]="{ 'pt-[40vh] gap-20': isLoading, 'pt-40 gap-5': !isLoading&&!isEditMode, 'pt-25 gap-3': !isLoading&&isEditMode }"
 >
-  <app-credit-badge [ngClass]="{ hidden: isEditMode }" />
-  <div class="flex flex-col gap-5">
-    <div class="flex justify-center items-center gap-3 w-full">
-      <app-selection-bar
-        [selectors]="selectors"
-        [initSelected]="selectors[0].selectorId"
-        (selected)="onDropdownSelected($event)"
-        class="w-full max-w-[500px]"
-      />
-      <button
-        [routerLink]="['/nosy-game']"
-        [queryParams]="{ mode: isEditMode? 'edit':'game' }"
-        (click)="changeMode()"
-        class="aspect-square h-full rounded-2xl bg-light-bg flex justify-center items-center"
-      >
-        <img src="/svg/edit-dark.svg" class="p-2 w-10" alt="edit-dark" />
-      </button>
-    </div>
-    <h2
-      [ngClass]="{ hidden: isEditMode }"
-      class="text-center text-4xl text-white h-40 flex items-center justify-center"
-    >
-      {{ selectedQuestion.text }}
-    </h2>
-    <button
-      [ngClass]="{ hidden: isEditMode }"
-      (click)="randomQuestion()"
-      class="bg-white w-fit m-auto my-5 py-2 px-5 text-2xl font-medium rounded-2xl text-nosy-game"
-    >
-      Random
-    </button>
-    <app-edit-list
-      [questions]="questions"
-      [ngClass]="{ hidden: !isEditMode }"
-    />
-    <h2
-      [ngClass]="{ hidden: isEditMode }"
-      class="text-light-bg text-2xl font-semibold"
-    >
-      level: {{ selectedQuestion.level }}
-    </h2>
-    <h2
-      [ngClass]="{ hidden: isEditMode }"
-      class="text-light-bg text-lg font-semibold"
-    >
-      {{ questions.length }} Question {{ questions.length > 1 ? "s" : "" }} left
-    </h2>
-  </div>
+  <app-credit-badge [isLight]="false" />
+  <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
+  <app-confirm-dialog></app-confirm-dialog>
 
-  <button [ngClass]="{ hidden: !isEditMode }">remove this Question set</button>
+  <div *ngIf="!isLoading">
+    <div class="flex flex-col gap-5">
+      <div class="flex justify-center items-center gap-3 w-full h-[46px]">
+        <app-selection-bar
+          *ngIf="!isCreateSet"
+          [selectors]="selectors"
+          [initSelected]="selectors[0].selectorId"
+          (selected)="onDropdownSelected($event)"
+          class="w-full max-w-[500px]"
+        />
+        <button
+          *ngIf="isEditMode"
+          (click)="isCreateSet = !isCreateSet"
+          class="aspect-square h-full rounded-2xl bg-light-bg flex justify-center items-center"
+        >
+          <img
+            [src]="isCreateSet ? '/svg/cancel.svg' : '/svg/add-set.svg'"
+            class="p-2 w-10"
+            alt="edit-dark"
+          />
+        </button>
+        <button
+          *ngIf="!isCreateSet"
+          [routerLink]="['/nosy-game']"
+          [queryParams]="{ mode: isEditMode ? 'edit' : 'game' }"
+          (click)="changeMode()"
+          class="aspect-square h-full rounded-2xl bg-light-bg flex justify-center items-center"
+        >
+          <img
+            [src]="isEditMode ? '/svg/cancel.svg' : '/svg/edit-dark.svg'"
+            class="p-2 w-10"
+            alt="edit-dark"
+          />
+        </button>
+      </div>
+      <h2
+        [ngClass]="{ hidden: isEditMode }"
+        class="text-center text-4xl text-white h-40 flex items-center justify-center"
+      >
+        {{ selectedQuestion.text }}
+      </h2>
+      <button
+        [ngClass]="{ hidden: isEditMode }"
+        (click)="randomQuestion()"
+        class="bg-white w-fit m-auto my-5 py-2 px-5 text-2xl font-medium rounded-2xl text-nosy-game"
+      >
+        Random
+      </button>
+      <app-edit-list
+        [setName]="selectedSetName"
+        [isCreateNewSet]="isCreateSet"
+        [questions]="questions"
+        *ngIf="isEditMode"
+        (request)="sendRequest($event)"
+      />
+      <h2
+        [ngClass]="{ hidden: isEditMode }"
+        class="text-light-bg text-2xl font-semibold"
+      >
+        level: {{ selectedQuestion.level }}
+      </h2>
+      <h2
+        [ngClass]="{ hidden: isEditMode }"
+        class="text-light-bg text-lg font-semibold"
+      >
+        {{ questions.length }} Question
+        {{ questions.length > 1 ? "s" : "" }} left
+      </h2>
+    </div>
+    <button
+      *ngIf="isEditMode"
+      class="underline text-[#D966BC] mt-5"
+      (click)="removeSet(selectedValue)"
+    >
+      remove this Question set
+    </button>
+  </div>
 </main>

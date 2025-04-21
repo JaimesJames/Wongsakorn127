@@ -19,9 +19,7 @@ export class AuthComponent {
   errorMessage: string = '';
 
   // Firebase Auth service
-  auth = inject(Auth);
-
-  constructor() {}
+  constructor(private auth: Auth) {}
 
   // Login function
   login() {

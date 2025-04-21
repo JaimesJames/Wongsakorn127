@@ -1,18 +1,23 @@
 <div
+  (click)="setNavStatus()"
   [ngClass]="{
-    'h-[70vh] pt-25': status == 'show',
-    'h-[10vh] pt-25': status == 'pre-hide',
-    'h-[2vh] opacity-50': status == 'hide'
+    'translate-y-[0px]': status == 'show',
+    'translate-y-[65vh]': status == 'pre-hide',
+    'translate-y-[70vh] opacity-50': status == 'hide'
   }"
-  class="fixed w-screen rounded-t-4xl px-5 bottom-0 bg-light-bg shadow-light"
+  class="fixed h-[70vh] pt-20 w-screen max-w-[720px] rounded-t-4xl px-10 bottom-0 bg-light-bg shadow-light left-1/2 -translate-x-1/2 transition-all duration-300"
 >
   <div
-    class="grid grid-cols-2 gap-3 overflow-y-scroll scroll-smooth h-full p-10"
+    class="grid grid-cols-2 gap-3 overflow-y-scroll scroll-smooth hide-scrollbar"
   >
-    <div *ngFor="let n of getRange(20)">
-      <a [routerLink]="['/nosy-game']">
-        <button class="bg-light-lazy w-full h-[96px] rounded-2xl"></button>
-      </a>
-    </div>
+    <a [routerLink]="['/nosy-game']">
+      <button class="bg-nosy-game w-full h-[96px] rounded-2xl font-semibold text-xl text-light-bg">Nosy Game</button>
+    </a>
+    <a [routerLink]="['/kinglee-game']">
+      <button class="bg-kinglee-game w-full h-[96px] rounded-2xl opacity-30">King Lee</button>
+    </a>
+    <a [routerLink]="['/dude-or-there']">
+      <button class="bg-dude-or-there w-full h-[96px] rounded-2xl opacity-30">Dude or There</button>
+    </a>
   </div>
 </div>
