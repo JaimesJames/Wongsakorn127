@@ -28,7 +28,7 @@
           />
         </button>
         <button
-          *ngIf="!isCreateSet"
+          *ngIf="!isCreateSet && isLogin"
           [routerLink]="['/nosy-game']"
           [queryParams]="{ mode: isEditMode ? 'edit' : 'game' }"
           (click)="changeMode()"

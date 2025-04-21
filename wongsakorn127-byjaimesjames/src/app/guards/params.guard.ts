@@ -16,8 +16,14 @@ export class ParamsGuard implements CanActivate {
         const mode = queryParams['mode']
 
         const isHome = url === '/'
-
-        if (mode === undefined && !isHome){
+        if (mode === undefined && url === '/auth'){
+            return this.router.createUrlTree([url], {
+                queryParams: { mode:'login' },
+                queryParamsHandling: 'merge',
+                preserveFragment: true,
+            })
+        }
+        else if (mode === undefined && !isHome){
             return this.router.createUrlTree([url], {
                 queryParams: { mode:'game' },
                 queryParamsHandling: 'merge',

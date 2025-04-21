@@ -9,6 +9,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from '../../../../share/components/dialog/confirmDialog.component';
 import { InitialLoadingComponent } from '../../../../share/components/loading/initialLoading.component';
+import { AuthService } from '../../../../share/services/auth/auth.service';
 
 @Component({
   selector: 'app-nosygame',
@@ -25,6 +26,7 @@ export class NosygameComponent implements OnInit {
     private questionService: QuestionService,
     private router: Router,
     private route: ActivatedRoute,
+    private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
@@ -51,6 +53,8 @@ export class NosygameComponent implements OnInit {
 
   isLoading: boolean = true;
 
+  isLogin:boolean = false
+
   async ngOnInit() {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -60,6 +64,9 @@ export class NosygameComponent implements OnInit {
     this.isLoading = true;
 
     try {
+      const user = await this.authService.getCurrentUser()
+      if(user) this.isLogin = true
+
       const data = await this.questionService.getAllQuestionSet();
       if (data) {
         this.selectors = data.map((e) => {
@@ -85,7 +92,6 @@ export class NosygameComponent implements OnInit {
  
   }
   async onDropdownSelected(item: { value: string, text: string }) {
-    this.isLoading = true;
     try {
       this.selectedValue = item.value;
       this.questions = await this.questionService.getQuestions(this.selectedValue)
@@ -95,9 +101,7 @@ export class NosygameComponent implements OnInit {
     } catch (error) {
       console.error('An error occurred while processing the selection:', error);
     } finally{
-      setTimeout(() => {
-        this.isLoading = false
-      }, 1000);
+
     }
   }
 
@@ -141,7 +145,6 @@ export class NosygameComponent implements OnInit {
   }
 
   async sendRequest(request: RequestSet) {
-    this.isLoading = true;
     try {
       if (this.isCreateSet) {
         const confirmed = await this.confirmDialog.open(
@@ -169,13 +172,11 @@ export class NosygameComponent implements OnInit {
     catch (error) {
 
     } finally{
-      this.isLoading = false
     }
 
   }
 
   async removeSet(setId: string) {
-    this.isLoading = true;
     try {
       const confirmed = await this.confirmDialog.open(
         'Remove Entire Set ?',
@@ -189,7 +190,6 @@ export class NosygameComponent implements OnInit {
     } catch (error) {
 
     } finally{
-      this.isLoading = false
     }
 
   }

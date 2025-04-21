@@ -1,37 +1,64 @@
-<!-- src/app/login-register/login-register.component.html -->
-<div class="login-container">
-    <h2>Login or Register</h2>
-  
-    <form (ngSubmit)="login()">
-      <label for="email">Email:</label>
-      <input
-        type="email"
-        id="email"
-        [(ngModel)]="email"
-        name="email"
-        required
-        placeholder="Enter your email"
-      />
-      
-      <label for="password">Password:</label>
-      <input
-        type="password"
-        id="password"
-        [(ngModel)]="password"
-        name="password"
-        required
-        placeholder="Enter your password"
-      />
-  
-      <button type="submit">Login</button>
+<main
+  class="w-screen h-screen flex flex-col justify-center text-center p-10 gap-5"
+>
+  <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
+  <p *ngIf="errorMessage" class="text-red-500">{{ errorMessage }}</p>
+  <h2 class="text-3xl font-semibold">Login</h2>
+  <form (ngSubmit)="login()" class="flex flex-col gap-5">
+    <input
+    *ngIf="!isLogin"
+      type="username"
+      id="username"
+      [(ngModel)]="username"
+      name="username"
+      required
+      placeholder="Enter your username"
+      class="border-2 rounded-full w-full p-3"
+    />
+    <input
+      type="email"
+      id="email"
+      [(ngModel)]="email"
+      name="email"
+      required
+      placeholder="Enter your email"
+      class="border-2 rounded-full w-full p-3"
+    />
+    <input
+      type="password"
+      id="password"
+      [(ngModel)]="password"
+      name="password"
+      required
+      placeholder="Enter your password"
+      class="border-2 rounded-full w-full p-3"
+    />
+    <form *ngIf="!isLogin" (ngSubmit)="register()">
+      <button type="submit" class="bg-black text-white rounded-full w-full p-3">
+        Register
+      </button>
     </form>
-  
-    <p>OR</p>
-  
-    <form (ngSubmit)="register()">
-      <button type="submit">Register</button>
-    </form>
-  
-    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-  </div>
-  
+    <button
+      *ngIf="isLogin"
+      type="submit"
+      class="bg-black text-white rounded-full w-full p-3"
+    >
+      Login
+    </button>
+  </form>
+  <button class="underline" (click)="isLogin = !isLogin">
+    {{ isLogin ? "create new account" : "already have WSK's Account?" }}
+  </button>
+  <hr />
+  <button
+    (click)="loginWithGoogle()"
+    class="flex items-center justify-center gap-3 border-2 border-gray-300 rounded-full w-full p-3 hover:bg-gray-100 transition"
+  >
+    <img
+      src="https://www.svgrepo.com/show/475656/google-color.svg"
+      alt="Google Logo"
+      class="w-5 h-5"
+    />
+    <span>Continue with Google</span>
+  </button>
+</main>

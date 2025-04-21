@@ -23,36 +23,27 @@ import { filter } from 'rxjs';
 export class NavigatorComponent implements OnInit {
   status: string = 'hide';
   isclicked: boolean = false
+  currentPath: string = '/home'
 
   constructor(private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
+    this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    .subscribe((event: NavigationEnd) => {
+      this.currentPath = event.url
+      if(event.url === '/auth') this.status = 'hide'
+      if(event.url === '/home') this.status = 'show'
+    });
     this.route.queryParams.subscribe(params => {
       const mode = params['mode'];
-      const currentUrl = this.router.url.split('?')[0];
       this.status = 'pre-hide';
-      setTimeout(() => {
-        if (mode === 'edit') {
-          this.status = 'hide';
-        } else if (mode === 'game') {
-          this.status = 'pre-hide';
-        } else if (currentUrl === '/') {
-          this.status = 'show';
-        }
-      }, 500);
-
-
+      if (mode === 'edit') {
+        this.status = 'hide';
+      } else if (mode === 'game') {
+        this.status = 'pre-hide';
+      }
     });
-  }
-
-  getChild(route: ActivatedRoute): ActivatedRoute {
-    while (route.firstChild) {
-      route = route.firstChild;
-    }
-    return route;
-  }
-  getRange(count: number): number[] {
-    return Array.from({ length: count }, (_, i) => i + 1);
   }
 
   setNavStatus() {
