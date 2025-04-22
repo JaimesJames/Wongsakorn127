@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { inject } from '@angular/core';
 import { signInWithPopup } from 'firebase/auth';
 import { Router } from '@angular/router';
-import { Firestore, getDoc } from '@angular/fire/firestore';
+import { Firestore } from '@angular/fire/firestore';
 import { doc, setDoc } from 'firebase/firestore';
 import { AuthService } from '../../share/services/auth/auth.service';
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
@@ -38,18 +38,16 @@ export class AuthComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    await this.handleRedirectResult()
-    this.isLoading = true
+    this.isLoading = true;
     try {
-      const user = await this.authService.getCurrentUser()
-      if (user) {
+      const userCredential = await this.handleRedirectResult();
+      if (userCredential) {
         this.router.navigate(['/home']);
       }
     } catch (error) {
-
-    }
-    finally {
-      this.isLoading = false
+      console.error('Redirect result error:', error);
+    } finally {
+      this.isLoading = false;
     }
 
   }
@@ -101,25 +99,13 @@ export class AuthComponent implements OnInit {
   async handleRedirectResult() {
     try {
       const result = await getRedirectResult(this.auth);
-      if (result && result.user) {
-        const user = result.user;
-        const userDocRef = doc(this.firestore, `users/${user.uid}`);
-  
-        // เช็คก่อนว่ามี doc อยู่รึยัง
-        const existing = await getDoc(userDocRef);
-        if (!existing.exists()) {
-          await setDoc(userDocRef, {
-            uid: user.uid,
-            email: user.email,
-            username: user.displayName,
-            createdAt: new Date(),
-          });
-        }
-  
-        this.router.navigate(['/home']); 
-      } 
-    } catch (err) {
-      console.error('Google login redirect error:', err);
+      if (result) {
+        return result; // ส่งกลับ userCredential
+      }
+      return null; // ถ้าไม่ได้ผลลัพธ์อะไร
+    } catch (error) {
+      console.error('Error handling redirect result:', error);
+      throw error;
     }
   }
 }
