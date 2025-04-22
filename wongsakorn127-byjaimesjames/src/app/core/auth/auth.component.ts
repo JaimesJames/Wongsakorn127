@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider } from '@angular/fire/auth';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from '@angular/fire/auth';
 import { FormsModule } from '@angular/forms';
 import { inject } from '@angular/core';
 import { signInWithPopup } from 'firebase/auth';
 import { Router } from '@angular/router';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore, getDoc } from '@angular/fire/firestore';
 import { doc, setDoc } from 'firebase/firestore';
 import { AuthService } from '../../share/services/auth/auth.service';
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
@@ -38,6 +38,7 @@ export class AuthComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    await this.handleRedirectResult()
     this.isLoading = true
     try {
       const user = await this.authService.getCurrentUser()
@@ -91,17 +92,34 @@ export class AuthComponent implements OnInit {
   async loginWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(this.auth, provider);
-      const userDocRef = doc(this.firestore, `users/${result.user.uid}`);
-      await setDoc(userDocRef, {
-        uid: result.user.uid,
-        email: result.user.email,
-        username: result.user.displayName,
-        createdAt: new Date(),
-      });
-      this.router.navigate(['/home']);
+      await signInWithRedirect(this.auth, provider);
     } catch (error) {
       console.error('Google login error:', error);
+    }
+  }
+
+  async handleRedirectResult() {
+    try {
+      const result = await getRedirectResult(this.auth);
+      if (result && result.user) {
+        const user = result.user;
+        const userDocRef = doc(this.firestore, `users/${user.uid}`);
+  
+        // เช็คก่อนว่ามี doc อยู่รึยัง
+        const existing = await getDoc(userDocRef);
+        if (!existing.exists()) {
+          await setDoc(userDocRef, {
+            uid: user.uid,
+            email: user.email,
+            username: user.displayName,
+            createdAt: new Date(),
+          });
+        }
+  
+        this.router.navigate(['/home']); 
+      } 
+    } catch (err) {
+      console.error('Google login redirect error:', err);
     }
   }
 }
