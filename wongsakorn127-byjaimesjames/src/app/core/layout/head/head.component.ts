@@ -52,7 +52,12 @@ export class HeadComponent implements OnInit {
   }
   logOutBtn() {
     this.toggle = false
-    this.authService.logout()
-    this.router.navigate(['/auth'])
+    this.authService.logout().then(() => {
+      sessionStorage.clear();
+      localStorage.clear();
+      this.router.navigate(['/auth']).then(() => {
+        window.location.reload(); // รีโหลดหลัง navigate
+      });
+    });
   }
 }
