@@ -41,6 +41,7 @@ export class AuthComponent implements OnInit {
     this.isLoading = true;
     try {
       const userCredential = await this.handleRedirectResult();
+      console.log(userCredential)
       if (userCredential) {
         this.router.navigate(['/home']);
       }
@@ -100,9 +101,21 @@ export class AuthComponent implements OnInit {
     try {
       const result = await getRedirectResult(this.auth);
       if (result) {
-        return result; // ส่งกลับ userCredential
+
+        const user = result.user;
+        
+        const userDocRef = doc(this.firestore, `users/${user.uid}`);
+        
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          username: user.displayName, 
+          createdAt: new Date(),
+        });
+
+        return result;
       }
-      return null; // ถ้าไม่ได้ผลลัพธ์อะไร
+      return null;
     } catch (error) {
       console.error('Error handling redirect result:', error);
       throw error;
