@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from '@angular/fire/auth';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider } from '@angular/fire/auth';
 import { FormsModule } from '@angular/forms';
 import { inject } from '@angular/core';
 import { signInWithPopup } from 'firebase/auth';
@@ -38,33 +38,19 @@ export class AuthComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.isLoading = true;
+    this.isLoading = true
     try {
-      // เช็คผลลัพธ์จากการ redirect
-      const result = await getRedirectResult(this.auth);
-      if (result && result.user) {
-        const user = result.user;
-        console.log("User Logged In:", user.email);
-  
-        // สร้างหรืออัปเดตข้อมูลผู้ใช้ใน Firestore
-        const userDocRef = doc(this.firestore, `users/${user.uid}`);
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          email: user.email,
-          username: user.displayName || 'Anonymous', // ถ้าไม่มี username ใช้ 'Anonymous'
-          createdAt: new Date(),
-        });
-  
-        // นำทางไปหน้า Home หลังจากล็อกอินสำเร็จ
+      const user = await this.authService.getCurrentUser()
+      if (user) {
         this.router.navigate(['/home']);
-      } else {
-        console.log('No user information found.');
       }
     } catch (error) {
-      console.error('Error handling redirect result:', error);
-    } finally {
-      this.isLoading = false;
+
     }
+    finally {
+      this.isLoading = false
+    }
+
   }
 
   login() {
@@ -105,34 +91,17 @@ export class AuthComponent implements OnInit {
   async loginWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(this.auth, provider);
+      const result = await signInWithPopup(this.auth, provider);
+      const userDocRef = doc(this.firestore, `users/${result.user.uid}`);
+      await setDoc(userDocRef, {
+        uid: result.user.uid,
+        email: result.user.email,
+        username: result.user.displayName,
+        createdAt: new Date(),
+      });
+      this.router.navigate(['/home']);
     } catch (error) {
       console.error('Google login error:', error);
-    }
-  }
-
-  async handleRedirectResult() {
-    try {
-      const result = await getRedirectResult(this.auth);
-      if (result) {
-
-        const user = result.user;
-        
-        const userDocRef = doc(this.firestore, `users/${user.uid}`);
-        
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          email: user.email,
-          username: user.displayName, 
-          createdAt: new Date(),
-        });
-
-        return result;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error handling redirect result:', error);
-      throw error;
     }
   }
 }
