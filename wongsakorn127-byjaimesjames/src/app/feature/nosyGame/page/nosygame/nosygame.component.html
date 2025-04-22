@@ -17,7 +17,7 @@
           class="w-full max-w-[500px]"
         />
         <button
-          *ngIf="isEditMode"
+          *ngIf="isEditMode && isLogin"
           (click)="isCreateSet = !isCreateSet"
           class="aspect-square h-full rounded-2xl bg-light-bg flex justify-center items-center"
         >
@@ -58,7 +58,7 @@
         [setName]="selectedSetName"
         [isCreateNewSet]="isCreateSet"
         [questions]="questions"
-        *ngIf="isEditMode"
+        *ngIf="isEditMode && isLogin"
         (request)="sendRequest($event)"
       />
       <h2
@@ -76,7 +76,7 @@
       </h2>
     </div>
     <button
-      *ngIf="isEditMode"
+      *ngIf="isEditMode && isLogin"
       class="underline text-[#D966BC] mt-5"
       (click)="removeSet(selectedValue)"
     >

@@ -1,19 +1,20 @@
 <main
-  class="w-screen h-screen flex flex-col justify-center text-center p-10 gap-5"
+  class="w-screen max-w-[720px] m-auto h-screen flex flex-col justify-center text-center p-10 gap-5"
 >
+  <app-credit-badge [isLight]="true"></app-credit-badge>
   <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
   <p *ngIf="errorMessage" class="text-red-500">{{ errorMessage }}</p>
-  <h2 class="text-3xl font-semibold">Login</h2>
-  <form (ngSubmit)="login()" class="flex flex-col gap-5">
+  <h2 class="text-3xl font-semibold text-text-bglight">Login</h2>
+  <form (ngSubmit)="login()" class="flex flex-col gap-5 text-text-bglight">
     <input
-    *ngIf="!isLogin"
+      *ngIf="!isLogin"
       type="username"
       id="username"
       [(ngModel)]="username"
       name="username"
       required
       placeholder="Enter your username"
-      class="border-2 rounded-full w-full p-3"
+      class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
     />
     <input
       type="email"
@@ -22,7 +23,7 @@
       name="email"
       required
       placeholder="Enter your email"
-      class="border-2 rounded-full w-full p-3"
+      class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
     />
     <input
       type="password"
@@ -31,17 +32,17 @@
       name="password"
       required
       placeholder="Enter your password"
-      class="border-2 rounded-full w-full p-3"
+      class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
     />
     <form *ngIf="!isLogin" (ngSubmit)="register()">
-      <button type="submit" class="bg-black text-white rounded-full w-full p-3">
+      <button type="submit" class="bg-text-bglight text-white rounded-full w-full p-3 hover:bg-black">
         Register
       </button>
     </form>
     <button
       *ngIf="isLogin"
       type="submit"
-      class="bg-black text-white rounded-full w-full p-3"
+      class="bg-text-bglight text-white rounded-full w-full p-3 hover:bg-black"
     >
       Login
     </button>
@@ -52,7 +53,7 @@
   <hr />
   <button
     (click)="loginWithGoogle()"
-    class="flex items-center justify-center gap-3 border-2 border-gray-300 rounded-full w-full p-3 hover:bg-gray-100 transition"
+    class="flex items-center justify-center gap-3 border-2 border-gray-300 rounded-full w-full p-3 hover:bg-gray-100 transition text-text-bglight"
   >
     <img
       src="https://www.svgrepo.com/show/475656/google-color.svg"

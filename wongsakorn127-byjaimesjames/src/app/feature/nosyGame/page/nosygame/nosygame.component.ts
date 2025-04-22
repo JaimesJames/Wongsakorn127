@@ -81,6 +81,9 @@ export class NosygameComponent implements OnInit {
         this.questions = await this.questionService.getQuestions(data[0].id)
         if (currentMode === 'game') this.randomQuestion()
       }
+      if (!this.isLogin && this.isEditMode){
+        this.router.navigate(['/nosy-game'])
+      }
     } catch (error) {
       console.error("Error loading data", error);
 
@@ -158,13 +161,6 @@ export class NosygameComponent implements OnInit {
         window.location.href = '/nosy-game';
       }
       else {
-        const confirmed = await this.confirmDialog.open(
-          'Update set',
-          'click continue to update'
-        );
-        if (!confirmed) {
-          return
-        }
         await this.questionService.submitRequestSet(this.selectedValue, request)
         window.location.reload();
       }

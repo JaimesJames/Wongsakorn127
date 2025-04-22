@@ -9,12 +9,13 @@ import { Firestore } from '@angular/fire/firestore';
 import { doc, setDoc } from 'firebase/firestore';
 import { AuthService } from '../../share/services/auth/auth.service';
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
+import { CreditBadgeComponent } from '../../share/components/badges/creditBadge/creditBadge.component';
 
 
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule, InitialLoadingComponent],
+  imports: [CommonModule, FormsModule, InitialLoadingComponent, CreditBadgeComponent],
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.css'],
 })
@@ -34,22 +35,22 @@ export class AuthComponent implements OnInit {
     private router: Router,
     private firestore: Firestore,
     private authService: AuthService
-  ) {}
+  ) { }
 
   async ngOnInit(): Promise<void> {
     this.isLoading = true
-    try{
+    try {
       const user = await this.authService.getCurrentUser()
-      if(user){
+      if (user) {
         this.router.navigate(['/home']);
       }
-    }catch(error){
+    } catch (error) {
 
     }
-    finally{
-        this.isLoading = false
+    finally {
+      this.isLoading = false
     }
-      
+
   }
 
   login() {
@@ -58,7 +59,7 @@ export class AuthComponent implements OnInit {
 
         const user = userCredential.user;
         console.log('Logged in as:', user.email);
-        this.errorMessage = '';  
+        this.errorMessage = '';
         window.location.reload()
       })
       .catch((error) => {
@@ -69,9 +70,8 @@ export class AuthComponent implements OnInit {
 
   register() {
     createUserWithEmailAndPassword(this.auth, this.email, this.password)
-      .then( async (userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
-
         const userDocRef = doc(this.firestore, `users/${user.uid}`);
         await setDoc(userDocRef, {
           uid: user.uid,
@@ -79,8 +79,7 @@ export class AuthComponent implements OnInit {
           username: this.username,
           createdAt: new Date(),
         });
-        console.log('Registered as:', user.email);
-        this.errorMessage = '';
+        this.errorMessage = 'Registration successed!♥';
       })
       .catch((error) => {
 
@@ -93,7 +92,13 @@ export class AuthComponent implements OnInit {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(this.auth, provider);
-      console.log('Logged in user:', result.user);
+      const userDocRef = doc(this.firestore, `users/${result.user.uid}`);
+      await setDoc(userDocRef, {
+        uid: result.user.uid,
+        email: result.user.email,
+        username: result.user.displayName,
+        createdAt: new Date(),
+      });
       this.router.navigate(['/home']);
     } catch (error) {
       console.error('Google login error:', error);

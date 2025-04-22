@@ -197,8 +197,14 @@ export class EditListComponent {
         });
     }
 
-    submitRequest() {
-
+    async submitRequest() {
+        const confirmed = await this.confirmDialog.open(
+            'Update set',
+            'click continue to update'
+          );
+          if (!confirmed) {
+            return
+          }
         if (this.createList.length > 0) this.createList = this.mergeChanges(this.createList, this.updateCreateList)
         this.request.emit({
             setName: this.isCreateNewSet ? this.newQuestionSet.value || '' : this.questionSetName.value || '' !== this.setName ? this.questionSetName.value || '' : '',

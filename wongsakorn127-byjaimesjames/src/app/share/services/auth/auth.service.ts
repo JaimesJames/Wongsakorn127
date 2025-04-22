@@ -8,29 +8,16 @@ import {
   User
 } from '@angular/fire/auth';
 import { doc, Firestore, getDoc } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Info } from '../../models/share.model';
+import { convertDocToInfo } from './auth.util';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private usernameSubject = new BehaviorSubject<string | null>(null);
-  username$ = this.usernameSubject.asObservable();
 
-  constructor(private auth: Auth, private firestore: Firestore) {
-    onAuthStateChanged(this.auth, async (user) => {
-      if (user) {
-        let username = user.displayName;
-        if (!username) {
-          const userDoc = await getDoc(doc(this.firestore, 'users', user.uid));
-          username = userDoc.exists() ? userDoc.data()['username'] : null;
-        }
-        this.usernameSubject.next(username);
-      } else {
-        this.usernameSubject.next(null);
-      }
-    });
-  }
+  constructor(private auth: Auth, private firestore: Firestore) {}
 
   logout() {
     return signOut(this.auth);
@@ -40,6 +27,21 @@ export class AuthService {
     return new Promise((resolve) => {
       this.auth.onAuthStateChanged(resolve)
     })
+  }
+
+  async getInfo(): Promise<Info | null>{
+    const user = await this.getCurrentUser()
+    if(user){
+      const ref = doc(this.firestore, `users/${user.uid}`)
+      const snapshot =  await getDoc(ref)
+      const identify = convertDocToInfo(snapshot)
+      return {
+        profileUrl:user.photoURL || null, 
+        ...identify
+        }
+      
+    }
+    return null
   }
 
 }
