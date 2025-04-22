@@ -55,7 +55,7 @@ export class AuthComponent implements OnInit {
           photoURL: user.photoURL, // เพิ่มภาพโปรไฟล์
           createdAt: new Date(),
         });
-  
+        console.log(result)
         // นำทางไปหน้า Home
         this.router.navigate(['/home']);
       }
