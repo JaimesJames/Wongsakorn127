@@ -40,17 +40,30 @@ export class AuthComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
     try {
-      const userCredential = await this.handleRedirectResult();
-      console.log(userCredential)
-      if (userCredential) {
+      // เช็คผลจากการ redirect
+      const result = await getRedirectResult(this.auth);
+      if (result) {
+        // ถ้ามีผลลัพธ์ (ล็อกอินสำเร็จ)
+        const user = result.user;
+        const userDocRef = doc(this.firestore, `users/${user.uid}`);
+        
+        // บันทึกข้อมูลผู้ใช้ลง Firestore
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          username: user.displayName,
+          photoURL: user.photoURL, // เพิ่มภาพโปรไฟล์
+          createdAt: new Date(),
+        });
+  
+        // นำทางไปหน้า Home
         this.router.navigate(['/home']);
       }
     } catch (error) {
-      console.error('Redirect result error:', error);
+      console.error('Error handling redirect result:', error);
     } finally {
       this.isLoading = false;
     }
-
   }
 
   login() {
