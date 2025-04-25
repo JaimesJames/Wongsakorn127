@@ -10,7 +10,7 @@
       'border-light-bg text-light-bg': !isHome,
       'border-dark-bg text-dark-bg': isHome
     }"
-    class="px-3 py-1 border-2 rounded-full font-semibold"
+    class="px-3 py-1 border-2 rounded-full font-semibold hover:cursor-pointer"
   >
     Log in
   </button>
@@ -18,7 +18,7 @@
     <button
       (click)="toggle = !toggle"
       *ngIf="isLoging"
-      class="relative w-12 aspect-square rounded-full"
+      class="relative w-12 aspect-square rounded-full hover:cursor-pointer"
     >
       <img
         [src]="userProfile ? userProfile : 'profile-1.png'"

@@ -4,8 +4,9 @@
   <app-credit-badge [isLight]="true"></app-credit-badge>
   <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
   <div *ngIf="!isLoading" class="flex flex-col gap-5">
+    
     <p *ngIf="errorMessage" class="text-red-500">{{ errorMessage }}</p>
-    <h2 class="text-3xl font-semibold text-text-bglight">Login</h2>
+    <h2 class="text-3xl font-semibold text-text-bglight">{{isLogin?'Login':'Create new Account'}}</h2>
     <form (ngSubmit)="login()" class="flex flex-col gap-5 text-text-bglight">
       <input
         *ngIf="!isLogin"
@@ -46,18 +47,18 @@
       <button
         *ngIf="isLogin"
         type="submit"
-        class="bg-text-bglight text-white rounded-full w-full p-3 hover:bg-black"
+        class="bg-text-bglight text-white rounded-full w-full p-3 hover:bg-black hover:cursor-pointer"
       >
         Login
       </button>
     </form>
-    <button class="underline" (click)="isLogin = !isLogin">
+    <button class="underline hover:cursor-pointer" (click)="isLogin = !isLogin">
       {{ isLogin ? "create new account" : "already have WSK's Account?" }}
     </button>
     <hr />
     <button
       (click)="loginWithGoogle()"
-      class="flex items-center justify-center gap-3 border-2 border-gray-300 rounded-full w-full p-3 hover:bg-gray-100 transition text-text-bglight"
+      class="flex items-center justify-center gap-3 border-2 border-gray-300 rounded-full w-full p-3 hover:bg-gray-100 hover:cursor-pointer transition text-text-bglight"
     >
       <img
         src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -66,5 +67,11 @@
       />
       <span>Continue with Google</span>
     </button>
+    <a href="/home" class="mt-10">
+      <button class="p-2 rounded-full border-2 border-dark-bg hover:bg-dark-bg hover:cursor-pointer group">
+        <img src="svg/home-light.svg" class="w-7 hidden group-hover:block" alt="home">
+        <img src="svg/home-dark.svg" class="w-7 group-hover:hidden" alt="home">
+      </button>
+    </a>
   </div>
 </main>

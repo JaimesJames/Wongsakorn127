@@ -44,7 +44,7 @@ export class HeadComponent implements OnInit {
         finally{
           setTimeout(() => {
             this.isLoading = false
-          }, 1000);
+          }, 2000);
           
         }
 
