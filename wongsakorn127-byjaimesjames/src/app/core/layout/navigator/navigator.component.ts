@@ -21,12 +21,10 @@ import { filter } from 'rxjs';
   standalone: true
 })
 export class NavigatorComponent implements OnInit {
-  status: string = 'hide';
+  status: string = 'show';
   isclicked: boolean = false
   currentPath: string = '/home'
-
   constructor(private router: Router, private route: ActivatedRoute) { }
-
   ngOnInit(): void {
     this.router.events
     .pipe(filter(event => event instanceof NavigationEnd))
@@ -37,10 +35,10 @@ export class NavigatorComponent implements OnInit {
     });
     this.route.queryParams.subscribe(params => {
       const mode = params['mode'];
-      this.status = 'pre-hide';
       if (mode === 'edit') {
         this.status = 'hide';
-      } else if (mode === 'game') {
+      } 
+      else if (mode === 'game') {
         this.status = 'pre-hide';
       }
     });
