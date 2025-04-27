@@ -1,0 +1,13 @@
+<main
+  class="w-screen h-screen bg-kinglee-game flex flex-col p-10 text-center overflow-hidden transition-all duration-300 justify-start"
+  [ngClass]="{ 'pt-[40vh] gap-20': isLoading, 'pt-40 gap-5': !isLoading&&!isEditMode, 'pt-25 gap-3': !isLoading&&isEditMode }"
+>
+  <app-credit-badge [isLight]="true" />
+  <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
+  <app-confirm-dialog></app-confirm-dialog>
+
+  <div *ngIf="!isLoading">
+    <app-deck [deck]="deck"></app-deck>
+  </div>
+</main>
+
