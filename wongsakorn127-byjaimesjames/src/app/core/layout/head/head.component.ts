@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnChanges, OnInit } from '@angular/core';
-import { AuthService } from '../../../share/services/auth/auth.service';
+
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { ChangeDetectorRef } from '@angular/core';
+import { AuthService } from '../../../adapters/angular/routers/auth/auth.service';
 
 @Component({
   selector: 'app-head',
@@ -32,10 +33,10 @@ export class HeadComponent implements OnInit {
         this.isHome = url.includes('/home') || !url.includes('/');
         try {
           this.isLoading = true
-          const user = await this.authService.getInfo()
+          const user = await this.authService.getUserInfomation()
           if (user) {
-            this.username = user.username
-            this.userProfile = user.profileUrl
+            this.username = user.displayName
+            this.userProfile = user.photoURL
             this.isLoging = true
           }
         } catch (error) {

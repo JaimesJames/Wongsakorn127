@@ -7,9 +7,10 @@ import { signInWithPopup } from 'firebase/auth';
 import { Router } from '@angular/router';
 import { Firestore } from '@angular/fire/firestore';
 import { doc, setDoc } from 'firebase/firestore';
-import { AuthService } from '../../share/services/auth/auth.service';
+
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
 import { CreditBadgeComponent } from '../../share/components/badges/creditBadge/creditBadge.component';
+import { AuthService } from '../../adapters/angular/routers/auth/auth.service';
 
 
 @Component({
@@ -34,7 +35,7 @@ export class AuthComponent implements OnInit {
     private auth: Auth,
     private router: Router,
     private firestore: Firestore,
-    private authService: AuthService
+    private authService: AuthService,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -53,55 +54,82 @@ export class AuthComponent implements OnInit {
 
   }
 
-  login() {
-    signInWithEmailAndPassword(this.auth, this.email, this.password)
-      .then((userCredential) => {
-
-        const user = userCredential.user;
-        console.log('Logged in as:', user.email);
-        this.errorMessage = '';
-        window.location.reload()
-      })
-      .catch((error) => {
-        console.error('Login Error:', error);
-        this.errorMessage = 'Login failed. Please check your credentials.';
-      });
+  async register(){
+    try {
+      const user = await this.authService.registerWithWSKAccount(this.username ,this.email, this.password)
+    } catch (error) {
+      
+    }
   }
 
-  register() {
-    createUserWithEmailAndPassword(this.auth, this.email, this.password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        const userDocRef = doc(this.firestore, `users/${user.uid}`);
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          email: this.email,
-          username: this.username,
-          createdAt: new Date(),
-        });
-        this.errorMessage = 'Registration successed!♥';
-      })
-      .catch((error) => {
-
-        console.error('Registration Error:', error);
-        this.errorMessage = 'Registration failed. Please try again later.';
-      });
+  async login() {
+    try {
+      const user = await this.authService.loginWithWSKAccount(this.email, this.password)
+      if(user){
+        window.location.reload()
+      }
+    } catch (error) {
+      
+    }
   }
 
   async loginWithGoogle() {
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(this.auth, provider);
-      const userDocRef = doc(this.firestore, `users/${result.user.uid}`);
-      await setDoc(userDocRef, {
-        uid: result.user.uid,
-        email: result.user.email,
-        username: result.user.displayName,
-        createdAt: new Date(),
-      });
-      this.router.navigate(['/home']);
+      const user = await this.authService.loginWithGoogle()
+      if(user){
+        window.location.reload()
+      }
     } catch (error) {
-      console.error('Google login error:', error);
+
     }
   }
+  // login() {
+  //   signInWithEmailAndPassword(this.auth, this.email, this.password)
+  //     .then((userCredential) => {
+
+  //       const user = userCredential.user;
+  //       console.log('Logged in as:', user.email);
+  //       this.errorMessage = '';
+  //       window.location.reload()
+  //     })
+  //     .catch((error) => {
+  //       console.error('Login Error:', error);
+  //       this.errorMessage = 'Login failed. Please check your credentials.';
+  //     });
+  // }
+  // async loginWithGoogle() {
+  //   try {
+  //     const provider = new GoogleAuthProvider();
+  //     const result = await signInWithPopup(this.auth, provider);
+  //     const userDocRef = doc(this.firestore, `users/${result.user.uid}`);
+  //     await setDoc(userDocRef, {
+  //       uid: result.user.uid,
+  //       email: result.user.email,
+  //       username: result.user.displayName,
+  //       createdAt: new Date(),
+  //     });
+  //     this.router.navigate(['/home']);
+  //   } catch (error) {
+  //     console.error('Google login error:', error);
+  //   }
+  // }
+  // register() {
+  //   createUserWithEmailAndPassword(this.auth, this.email, this.password)
+  //     .then(async (userCredential) => {
+  //       const user = userCredential.user;
+  //       const userDocRef = doc(this.firestore, `users/${user.uid}`);
+  //       await setDoc(userDocRef, {
+  //         uid: user.uid,
+  //         email: this.email,
+  //         username: this.username,
+  //         createdAt: new Date(),
+  //       });
+  //       this.errorMessage = 'Registration successed!♥';
+  //     })
+  //     .catch((error) => {
+
+  //       console.error('Registration Error:', error);
+  //       this.errorMessage = 'Registration failed. Please try again later.';
+  //     });
+  // }
 }
