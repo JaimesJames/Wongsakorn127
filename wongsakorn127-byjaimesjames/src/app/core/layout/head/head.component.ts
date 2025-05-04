@@ -59,9 +59,7 @@ export class HeadComponent implements OnInit {
     this.authService.logout().then(() => {
       sessionStorage.clear();
       localStorage.clear();
-      this.router.navigate(['/auth']).then(() => {
-        window.location.reload(); // รีโหลดหลัง navigate
-      });
+      this.router.navigate(['/auth'])
     });
   }
 }
