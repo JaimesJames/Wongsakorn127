@@ -1,15 +1,16 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
 import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
 import { selectionBarComponent } from '../../../../share/components/input/selectionBar.component';
-import { QuestionService } from '../../services/question.service';
-import { QuestionsText, RequestSet } from '../../models/nosygame.model';
+import { QuestionsText } from '../../../../../core/nosyGame/entities/QuestionsText';
+import { RequestSet } from '../../../../../core/nosyGame/entities/RequestSet';
 import { Selector } from '../../../../share/models/share.model';
 import { EditListComponent } from '../../components/editList.component';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from '../../../../share/components/dialog/confirmDialog.component';
 import { InitialLoadingComponent } from '../../../../share/components/loading/initialLoading.component';
-import { AuthService } from '../../../../share/services/auth/auth.service';
+import { AuthService } from '../../../../adapters/angular/routers/auth/auth.service';
+import { QuestionSetService } from '../../../../adapters/angular/routers/nosyGame/questionSet.service';
 
 @Component({
   selector: 'app-nosygame',
@@ -23,7 +24,7 @@ export class NosygameComponent implements OnInit {
   @ViewChild(EditListComponent) editList!: EditListComponent;
 
   constructor(
-    private questionService: QuestionService,
+    private questionService: QuestionSetService,
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
@@ -42,11 +43,7 @@ export class NosygameComponent implements OnInit {
 
   selectedSetName = ''
   selectedValue = '';
-  selectedQuestion: QuestionsText = {
-    id: '',
-    level: 0,
-    text: ''
-  };
+  selectedQuestion = new QuestionsText('', 0, '')
 
   questions: QuestionsText[] = [];
   previousQuestions: QuestionsText[] = [];
@@ -67,7 +64,7 @@ export class NosygameComponent implements OnInit {
       const user = await this.authService.getCurrentUser()
       if(user) this.isLogin = true
 
-      const data = await this.questionService.getAllQuestionSet();
+      const data = await this.questionService.getAllQuestionSetName();
       if (data) {
         this.selectors = data.map((e) => {
           return {
@@ -78,7 +75,7 @@ export class NosygameComponent implements OnInit {
         })
         this.selectedValue = data[0].id
         this.selectedSetName = this.selectors[0].text
-        this.questions = await this.questionService.getQuestions(data[0].id)
+        this.questions = await this.questionService.getQuestionsBySetId(data[0].id) || []
         if (currentMode === 'game') this.randomQuestion()
       }
       if (!this.isLogin && this.isEditMode){
@@ -97,7 +94,7 @@ export class NosygameComponent implements OnInit {
   async onDropdownSelected(item: { value: string, text: string }) {
     try {
       this.selectedValue = item.value;
-      this.questions = await this.questionService.getQuestions(this.selectedValue)
+      this.questions = await this.questionService.getQuestionsBySetId(this.selectedValue) || []
       this.selectedSetName = item.text
       this.previousQuestions = [];
       if (!this.isEditMode) this.randomQuestion()
@@ -143,24 +140,18 @@ export class NosygameComponent implements OnInit {
     this.router.navigate(['/nosy-game'], {
       queryParams: { mode: currentMode === "game" ? "edit" : "game" }
     })
-    this.questions = await this.questionService.getQuestions(this.selectedValue)
+    this.questions = await this.questionService.getQuestionsBySetId(this.selectedValue) || []
     this.isEditMode = !this.isEditMode
   }
 
   async sendRequest(request: RequestSet) {
     try {
       if (this.isCreateSet) {
-        const confirmed = await this.confirmDialog.open(
-          'Create new set',
-          'click continue to create'
-        );
-        if (!confirmed) {
-          return
-        }
-        await this.questionService.addQuestionSet(request.setName, request.create)
+        await this.questionService.createQuestionSet(request.setName, request.createList)
         window.location.href = '/nosy-game';
       }
       else {
+        
         await this.questionService.submitRequestSet(this.selectedValue, request)
         window.location.reload();
       }

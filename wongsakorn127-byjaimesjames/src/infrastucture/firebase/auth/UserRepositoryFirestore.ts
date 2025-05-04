@@ -10,12 +10,13 @@ export class UserRepositoryFirestore implements UserPort {
     constructor(
         private authRepo: AuthRepositoryFirebase,
     ) { }
-    async getUserInfomation(): Promise<User|null> {
+    async getUserInfomation(): Promise<User | null> {
         const user = await this.authRepo.getCurrentUser()
         if (user) {
             const userRef = doc(db, `users/${user.uid}`)
             const docSnap = await getDoc(userRef)
             return convertDocToInfo(docSnap)
+
         }
         return null
     }
@@ -29,6 +30,7 @@ export class UserRepositoryFirestore implements UserPort {
                 uid: user.uid,
                 email: user.email,
                 username: user.displayName,
+                userProfile: user.photoURL,
                 createdAt: new Date(),
             })
         }

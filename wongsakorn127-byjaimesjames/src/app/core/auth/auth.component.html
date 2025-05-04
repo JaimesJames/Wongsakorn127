@@ -1,58 +1,142 @@
 <main
-  class="w-screen max-w-[720px] m-auto h-screen flex flex-col justify-center text-center p-10 gap-10 transition-all duration-300"
+  class="w-screen max-w-[720px] m-auto h-screen flex flex-col justify-center text-center p-10 gap-2 transition-all duration-300 overflow-y-scroll"
 >
   <app-credit-badge [isLight]="true"></app-credit-badge>
   <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
   <div *ngIf="!isLoading" class="flex flex-col gap-5">
-    
-    <p *ngIf="errorMessage" class="text-red-500">{{ errorMessage }}</p>
-    <h2 class="text-3xl font-semibold text-text-bglight">{{isLogin?'Login':'Create new Account'}}</h2>
-    <form (ngSubmit)="login()" class="flex flex-col gap-5 text-text-bglight">
+    <p *ngIf="Message" class="text-red-500">{{ Message }}</p>
+    <h2 class="text-3xl font-semibold text-text-bglight mt-10">
+      {{ isLogin ? "Login" : "Create new Account" }}
+    </h2>
+    <form
+      *ngIf="!isLogin"
+      [formGroup]="registerForm"
+      (ngSubmit)="register()"
+      class="flex flex-col gap-3 text-text-bglight"
+    >
       <input
         *ngIf="!isLogin"
-        type="username"
-        id="username"
-        [(ngModel)]="username"
-        name="username"
-        required
+        type="text"
+        formControlName="username"
         placeholder="Enter your username"
         class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
       />
+      <div
+        [ngClass]="{
+          'opacity-100':
+            registerForm.get('username')?.invalid
+        }"
+        class="opacity-0 text-sm text-red-400 text-start px-5"
+      >
+        * Username is required.
+      </div>
       <input
         type="email"
-        id="email"
-        [(ngModel)]="email"
-        name="email"
-        required
+        formControlName="email"
         placeholder="Enter your email"
         class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
       />
+      <div
+        [ngClass]="{
+          'opacity-100':
+            registerForm.get('email')?.invalid
+        }"
+        class="opacity-0 text-sm text-red-400 text-start px-5"
+      >
+        * Valid email is required.
+      </div>
       <input
         type="password"
-        id="password"
-        [(ngModel)]="password"
-        name="password"
-        required
+        formControlName="password"
         placeholder="Enter your password"
         class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
       />
-      <form *ngIf="!isLogin" (ngSubmit)="register()">
-        <button
-          type="submit"
-          class="bg-text-bglight text-white rounded-full w-full p-3 hover:bg-black"
-        >
-          Register
-        </button>
-      </form>
+      <div
+        [ngClass]="{
+          'opacity-100':
+            registerForm.get('password')?.invalid
+        }"
+        class="opacity-0 text-sm text-red-400 text-start px-5"
+      >
+        * Password is required and must be at least 6 characters.
+      </div>
+      <input
+        type="password"
+        formControlName="confirmPassword"
+        placeholder="confirm password"
+        class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
+      />
+      <div
+        [ngClass]="{'opacity-100':registerForm.errors?.['passwordMismatch']}"
+        class="opacity-0 text-sm text-red-400 text-start px-5"
+      >
+        * Passwords do not match.
+      </div>
       <button
-        *ngIf="isLogin"
         type="submit"
-        class="bg-text-bglight text-white rounded-full w-full p-3 hover:bg-black hover:cursor-pointer"
+        [ngClass]="{
+          'opacity-40 font-semibold bg-transparent border-2 border-dark-bg text-dark-bg':
+            loginForm.invalid,
+          'opacity-100 bg-text-bglight text-white hover:bg-black hover:cursor-pointer':
+            loginForm.valid
+        }"
+        class="rounded-full w-full p-3"
+      >
+        register
+      </button>
+    </form>
+
+    <form
+      *ngIf="isLogin"
+      [formGroup]="loginForm"
+      (ngSubmit)="login()"
+      class="flex flex-col gap-3 text-text-bglight"
+    >
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="Enter your email"
+        class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
+      />
+      <div
+        [ngClass]="{
+          'opacity-100':
+            loginForm.get('email')?.invalid
+        }"
+        class="opacity-0 text-sm text-red-400 text-start px-5"
+      >
+        * Valid email is required.
+      </div>
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="Enter your password"
+        class="border-2 rounded-full w-full p-3 px-10 placeholder:opacity-40"
+      />
+      <div
+        [ngClass]="{
+          'opacity-100':
+            loginForm.get('password')?.invalid
+        }"
+        class="opacity-0 text-sm text-red-400 text-start px-5"
+      >
+        * Password is required and must be at least 6 characters.
+      </div>
+      <button
+        type="submit"
+        [ngClass]="{
+          'opacity-40 font-semibold bg-transparent border-2 border-dark-bg text-dark-bg':
+            loginForm.invalid,
+          'opacity-100 bg-text-bglight text-white hover:bg-black hover:cursor-pointer':
+            loginForm.valid
+        }"
+        class="rounded-full w-full p-3"
       >
         Login
       </button>
     </form>
-    <button class="underline hover:cursor-pointer" (click)="isLogin = !isLogin">
+
+    <button class="underline hover:cursor-pointer" (click)="toggleMode()">
       {{ isLogin ? "create new account" : "already have WSK's Account?" }}
     </button>
     <hr />
@@ -68,9 +152,19 @@
       <span>Continue with Google</span>
     </button>
     <a href="/home" class="mt-10">
-      <button class="p-2 rounded-full border-2 border-dark-bg hover:bg-dark-bg hover:cursor-pointer group">
-        <img src="svg/home-light.svg" class="w-7 hidden group-hover:block" alt="home">
-        <img src="svg/home-dark.svg" class="w-7 group-hover:hidden" alt="home">
+      <button
+        class="p-2 rounded-full border-2 border-dark-bg hover:bg-dark-bg hover:cursor-pointer group"
+      >
+        <img
+          src="svg/home-light.svg"
+          class="w-7 hidden group-hover:block"
+          alt="home"
+        />
+        <img
+          src="svg/home-dark.svg"
+          class="w-7 group-hover:hidden"
+          alt="home"
+        />
       </button>
     </a>
   </div>

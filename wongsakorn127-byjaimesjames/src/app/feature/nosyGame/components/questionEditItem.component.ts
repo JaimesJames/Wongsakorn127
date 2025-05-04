@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, ElementRef, ViewChild, SimpleChanges } from '@angular/core';
-import { QuestionsText, CurrentValue, QuestionDetail } from '../models/nosygame.model';
 import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { ConfirmDialogComponent } from '../../../share/components/dialog/confirmDialog.component';
 import { combineLatest } from 'rxjs';
+import { QuestionsText } from '../../../../core/nosyGame/entities/QuestionsText';
+import { CurrentValue } from '../../../../core/nosyGame/entities/CurrentValue';
 
 @Component({
   selector: 'app-question-edit-item',
@@ -32,11 +33,7 @@ export class QuestionEditItemComponent {
   isEditing: boolean = false
 
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
-  @Input() item: QuestionsText = {
-    id: '',
-    level: 0,
-    text: ''
-  }
+  @Input() item = new QuestionsText('', 0, '')
   @Input() isAdding: boolean = false
   @Input() isAdded: boolean = false
 
@@ -47,7 +44,7 @@ export class QuestionEditItemComponent {
   levelControl = new FormControl(0);
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['item']) {
+    if (changes['item'] && this.isAdded) {
       this.questionControl.setValue(this.item.text);
       this.levelControl.setValue(this.item.level);
     }
@@ -65,15 +62,15 @@ export class QuestionEditItemComponent {
       const isLevelChanged = level !== this.item.level;
       const isChanged = isTextChanged || isLevelChanged;
 
-      this.currentValue.emit({
-        id: this.item.id,
+      this.currentValue.emit(new CurrentValue(
+        this.item.id,
         level,
         text,
-        isEditing: isChanged
-      });
+        isChanged)
+      );
 
       this.isEditing = isChanged;
-      
+
     });
 
     this.questionControl.setValue(this.item.text);
@@ -81,11 +78,11 @@ export class QuestionEditItemComponent {
   }
 
   submit() {
-    this.submitItem.emit({
-      id: this.item.id,
-      level: this.levelControl.value || this.item.level,
-      text: this.questionControl.value || this.item.text,
-    })
+    this.submitItem.emit(new QuestionsText(
+      this.item.id,
+      this.levelControl.value || this.item.level,
+      this.questionControl.value || this.item.text,
+    ))
     this.questionControl.setValue(this.item.text)
     this.levelControl.setValue(this.item.level)
   }

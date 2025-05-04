@@ -9,12 +9,12 @@ export class QuestionSet {
         this.name = newName.trim()
     }
 
-    static fromFirebase(data: {
-        id: string
-        name: string
-        createdAt: { seconds: number; nanoseconds: number }
-    }): QuestionSet {
-        const date = new Date(data.createdAt.seconds * 1000)
-        return new QuestionSet(data.id, data.name, date)
-    }
+    // static fromFirebase(data: {
+    //     id: string
+    //     name: string
+    //     createdAt: { seconds: number; nanoseconds: number }
+    // }): QuestionSet {
+    //     const date = new Date(data.createdAt.seconds * 1000)
+    //     return new QuestionSet(data.id, data.name, date)
+    // }
 }

@@ -1,8 +1,8 @@
 export class User {
     constructor(
         public uid: string,
-        public displayName: string,
+        public username: string,
         public email: string,
-        public photoURL: string | null
+        public userProfile: string | null
     ){ }
 }

@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, QueryList, SimpleChanges, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { QuestionEditItemComponent } from './questionEditItem.component';
-import { CurrentValue, QuestionsText, RequestSet } from '../models/nosygame.model';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { ConfirmDialogComponent } from '../../../share/components/dialog/confirmDialog.component';
 import { AlertDialogComponent } from '../../../share/components/dialog/alertDialog.component';
+import { QuestionsText } from '../../../../core/nosyGame/entities/QuestionsText';
+import { RequestSet } from '../../../../core/nosyGame/entities/RequestSet';
+import { CurrentValue } from '../../../../core/nosyGame/entities/CurrentValue';
 
 
 @Component({
@@ -40,7 +42,7 @@ import { AlertDialogComponent } from '../../../share/components/dialog/alertDial
         <hr class="text-light-bg/20 border-1 w-75 flex"> 
         <div class="border-3 border-dashed border-light-bg/20 p-3 w-full h-[35vh] rounded-4xl" style="border-spacing: 10px;">
             <div class="w-full flex flex-col gap-3 overflow-y-scroll h-full hide-scrollbar">
-            <app-question-edit-item [isAdding]="true" [item]="{id:createList.length.toString(), text: '', level: 0}" (submitItem)="addToCreateList($event)" *ngIf="isAdding || isCreateNewSet"></app-question-edit-item>
+            <app-question-edit-item [isAdding]="true" [item]="newQuestion()" (submitItem)="addToCreateList($event)" *ngIf="isAdding || isCreateNewSet"></app-question-edit-item>
             <app-question-edit-item [isAdding]="true" [isAdded]="true" *ngFor="let question of createList; trackBy: trackById" [item]="question" (currentValue)="checkCreate($event)" (submitItem)="removeItem($event.id)"></app-question-edit-item>
                 <app-question-edit-item *ngFor="let question of localQuestions; trackBy: trackById" [item]="question" (currentValue)="checkRequest($event)" (submitItem)="checkDelete(question)" [ngClass]="{'hidden':deleteList.includes(question.id) || isCreateNewSet, 'opacity-30 pointer-events-none': isAdding}"></app-question-edit-item>
             </div>
@@ -64,7 +66,6 @@ import { AlertDialogComponent } from '../../../share/components/dialog/alertDial
     standalone: true
 })
 export class EditListComponent {
-    constructor(private cdr: ChangeDetectorRef) { }
 
     @Input() setName: string = ''
     @Input() questions: QuestionsText[] = []
@@ -91,7 +92,9 @@ export class EditListComponent {
     );
     newQuestionSet = new FormControl<string>('')
 
-
+    newQuestion(): QuestionsText {
+        return new QuestionsText(this.createList.length.toString(), 0, '');
+    }
 
     get isEnableSave(): boolean {
         const hasChanges =
@@ -99,7 +102,7 @@ export class EditListComponent {
             this.createList.length > 0 ||
             this.deleteList.length > 0 ||
             (this.questionSetName.value != this.setName &&
-            this.questionSetName.value != '');
+                this.questionSetName.value != '');
 
         const hasNewSetReady =
             this.createList.length > 0 &&
@@ -127,16 +130,12 @@ export class EditListComponent {
     checkRequest(item: CurrentValue) {
         const idList = this.updateList.map(e => e.id)
         if (!idList.includes(item.id) && item.isEditing) {
-            this.updateList.push({
-                id: item.id,
-                level: item.level,
-                text: item.text
-            })
+            this.updateList.push(new QuestionsText(item.id, item.level, item.text));
         }
         else if (item.isEditing) {
-            this.updateList = this.updateList.map(e => {
-                return e.id === item.id ? { id: item.id, level: item.level, text: item.text } : e
-            })
+            this.updateList = this.updateList.map(e =>
+                e.id === item.id ? new QuestionsText(item.id, item.level, item.text) : e
+            );
         }
         else if (idList.includes(item.id) && !item.isEditing) {
             this.updateList = this.updateList.filter(e => e.id !== item.id)
@@ -158,19 +157,15 @@ export class EditListComponent {
     }
 
     checkCreate(item: CurrentValue) {
+        console.log(item)
         const idList = this.updateCreateList.map(e => e.id)
         if (!idList.includes(item.id) && item.isEditing) {
-            this.updateCreateList.push({
-                id: item.id,
-                level: item.level,
-                text: item.text
-            })
+            this.updateCreateList.push(new QuestionsText(item.id, item.level, item.text));
         }
         if (item.isEditing) {
-            this.updateCreateList = this.updateCreateList.map(e => {
-                console.log(this.createList, this.updateCreateList)
-                return e.id === item.id ? { id: item.id, level: item.level, text: item.text } : e
-            })
+            this.updateCreateList = this.updateCreateList.map(e =>
+                e.id === item.id ? new QuestionsText(item.id, item.level, item.text) : e
+            );
         }
         else {
 
@@ -198,20 +193,31 @@ export class EditListComponent {
     }
 
     async submitRequest() {
-        const confirmed = await this.confirmDialog.open(
-            'Update set',
-            'click continue to update'
-          );
-          if (!confirmed) {
-            return
-          }
+        if(this.isCreateNewSet){
+            const confirmed = await this.confirmDialog.open(
+                'Create new set',
+                'click continue to create'
+              );
+              if (!confirmed) {
+                return
+              }
+        }
+        else{
+            const confirmed = await this.confirmDialog.open(
+                'Update set',
+                'click continue to update'
+            );
+            if (!confirmed) {
+                return
+            }
+        }
         if (this.createList.length > 0) this.createList = this.mergeChanges(this.createList, this.updateCreateList)
-        this.request.emit({
-            setName: this.isCreateNewSet ? this.newQuestionSet.value || '' : this.questionSetName.value || '' !== this.setName ? this.questionSetName.value || '' : '',
-            create: this.createList,
-            update: this.updateList,
-            delete: this.deleteList,
-        })
+        this.request.emit(new RequestSet(
+            this.isCreateNewSet ? this.newQuestionSet.value || '' : this.questionSetName.value || '' !== this.setName ? this.questionSetName.value || '' : '',
+            this.createList,
+            this.updateList,
+            this.deleteList,
+        ))
         this.deleteList = [];
         this.updateList = [];
         this.createList = [];

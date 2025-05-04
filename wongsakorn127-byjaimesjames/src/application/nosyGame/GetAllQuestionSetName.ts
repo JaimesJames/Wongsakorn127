@@ -7,6 +7,6 @@ export class GetAllQuestionSets {
     ) { }
 
     async execute(): Promise<QuestionSet[]>{
-        return await this.repo.getAll()
+        return await this.repo.getAllQuestionSetName()
     }
 }

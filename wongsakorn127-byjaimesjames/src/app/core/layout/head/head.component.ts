@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnChanges, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnChanges, OnInit, PLATFORM_ID } from '@angular/core';
 
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
@@ -16,6 +16,7 @@ export class HeadComponent implements OnInit {
   constructor(
     public authService: AuthService,
     public router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
   username: string | null = null;
   userProfile: string | null = null
@@ -33,20 +34,22 @@ export class HeadComponent implements OnInit {
         this.isHome = url.includes('/home') || !url.includes('/');
         try {
           this.isLoading = true
-          const user = await this.authService.getUserInfomation()
-          if (user) {
-            this.username = user.displayName
-            this.userProfile = user.photoURL
-            this.isLoging = true
+          if (isPlatformBrowser(this.platformId)) {
+            const user = await this.authService.getUserInfomation()
+            if (user) {
+              this.username = user.username
+              this.userProfile = user.userProfile
+              this.isLoging = true
+            }
           }
         } catch (error) {
 
         }
-        finally{
+        finally {
           setTimeout(() => {
             this.isLoading = false
           }, 2000);
-          
+
         }
 
       });
