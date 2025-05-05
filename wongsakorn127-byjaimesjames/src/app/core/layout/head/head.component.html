@@ -1,7 +1,7 @@
 <div (click)="toggle = !toggle" [ngClass]="{'bg-dark-bg/30 fixed left-0 top-0 w-screen h-screen': toggle}"></div>
 <header
   *ngIf="!isAuth && !isLoading"
-  class="justify-end h-10 fixed top-0 mt-10 flexitems-center left-1/2 -translate-x-1/2"
+  class="justify-end h-10 fixed top-0 mt-10 flexitems-center left-1/2 -translate-x-1/2 z-9"
 >
   <button
     *ngIf="!isLoging"

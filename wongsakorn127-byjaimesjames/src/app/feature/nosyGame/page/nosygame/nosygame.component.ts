@@ -76,7 +76,7 @@ export class NosygameComponent implements OnInit {
         this.selectedValue = data[0].id
         this.selectedSetName = this.selectors[0].text
         this.questions = await this.questionService.getQuestionsBySetId(data[0].id) || []
-        if (currentMode === 'game') this.randomQuestion()
+        this.randomQuestion()
       }
       if (!this.isLogin && this.isEditMode){
         this.router.navigate(['/nosy-game'])
@@ -134,9 +134,8 @@ export class NosygameComponent implements OnInit {
           return
         }
       }
-      window.location.href = '/nosy-game';
     }
-
+    this.ngOnInit()
     this.router.navigate(['/nosy-game'], {
       queryParams: { mode: currentMode === "game" ? "edit" : "game" }
     })

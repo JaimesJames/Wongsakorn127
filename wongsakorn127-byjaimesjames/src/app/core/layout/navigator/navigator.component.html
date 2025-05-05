@@ -1,4 +1,4 @@
-<div (click)="setNavStatus()" [ngClass]="{'fixed left-0 top-0 w-screen h-screen bg-dark-bg/30': status == 'show'}">
+<div (click)="setNavStatus()" [ngClass]="{'fixed left-0 top-0 w-screen h-screen': status == 'show'}">
 
 </div>
 <div
@@ -8,19 +8,60 @@
     'translate-y-[65vh]': status == 'pre-hide',
     'translate-y-[70vh] opacity-50': status == 'hide'
   }"
-  class="fixed h-[70vh] pt-20 w-screen max-w-[720px] rounded-t-4xl px-10 bottom-0 bg-light-bg shadow-light left-1/2 -translate-x-1/2 transition-all duration-300"
+  class="fixed h-[70vh] pt-20 w-screen max-w-[720px] rounded-t-4xl px-3 sm:px-10 bottom-0 bg-light-bg shadow-light left-1/2 -translate-x-1/2 transition-all duration-300 z-10 border-light-lazy border-2"
 >
   <div
-    class="grid grid-cols-2 gap-3 overflow-y-scroll scroll-smooth hide-scrollbar"
+    class="flex flex-wrap justify-center gap-3 overflow-y-scroll scroll-smooth hide-scrollbar"
   >
     <a [routerLink]="['/nosy-game']" [queryParams]="{mode:'game'}">
-      <button class="bg-nosy-game w-full h-[96px] rounded-2xl font-semibold text-xl text-light-bg hover:cursor-pointer">Nosy Game</button>
+      <button class="w-[148px] h-[96px] rounded-2xl font-semibold text-xl text-light-bg hover:cursor-pointer">
+        <img src="nosy-badge.png" alt="nosy-badge">
+      </button>
     </a>
     <a [routerLink]="['/kinglee-game']">
-      <button class="bg-kinglee-game w-full h-[96px] rounded-2xl hover:cursor-pointer">King Lee</button>
+      <button class="w-[148px] h-[96px] rounded-2xl hover:cursor-pointer">
+        <img src="kinglee-badge.png" alt="kinglee-badge">
+      </button>
     </a>
     <a [routerLink]="['/dude-or-there']">  
-      <button class="bg-dude-or-there w-full h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">Dude or There</button>
+      <button class="w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        <img src="spinit-badge.png" alt="spinit-badge">
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
+    </a>
+    <a>  
+      <button class="bg-light-lazy w-[148px] h-[96px] rounded-2xl opacity-30 hover:cursor-pointer">
+        
+      </button>
     </a>
   </div>
 </div>

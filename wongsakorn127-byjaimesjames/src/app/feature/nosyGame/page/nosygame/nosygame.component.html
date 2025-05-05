@@ -1,12 +1,12 @@
 <main
   class="w-screen h-screen bg-nosy-game flex flex-col p-10 text-center overflow-hidden transition-all duration-300 justify-start"
-  [ngClass]="{ 'pt-[40vh] gap-20': isLoading, 'pt-40 gap-5': !isLoading&&!isEditMode, 'pt-25 gap-3': !isLoading&&isEditMode }"
+  [ngClass]="{ 'pt-[40vh] gap-20': isLoading, 'pt-40 gap-5': !isLoading&&!isEditMode, 'pt-29 gap-3': !isLoading&&isEditMode }"
 >
   <app-credit-badge [isLight]="false" />
   <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
   <app-confirm-dialog></app-confirm-dialog>
 
-  <div *ngIf="!isLoading">
+  <div *ngIf="!isLoading" class="z-1">
     <div class="flex flex-col gap-5">
       <div class="flex justify-center items-center gap-3 w-full h-[46px]">
         <app-selection-bar
@@ -71,8 +71,7 @@
         [ngClass]="{ hidden: isEditMode }"
         class="text-light-bg text-lg font-semibold"
       >
-        {{ questions.length }} Question
-        {{ questions.length > 1 ? "s" : "" }} left
+        {{ questions.length }} Question{{ questions.length > 1 ? "s" : "" }} left
       </h2>
     </div>
     <button
@@ -83,4 +82,6 @@
       remove this Question set
     </button>
   </div>
+  <img class="absolute h-full top-0 left-0" src="svg/nosy-left.svg" alt="nosy-left">
+  <img class="absolute h-full top-0 right-0" src="svg/nosy-right.svg" alt="nosy-right">
 </main>

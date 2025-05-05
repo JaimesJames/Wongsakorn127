@@ -10,7 +10,6 @@ import { AuthService } from '../../../adapters/angular/routers/auth/auth.service
   selector: 'app-head',
   imports: [CommonModule],
   templateUrl: './head.component.html',
-  styleUrl: './head.component.css'
 })
 export class HeadComponent implements OnInit {
   constructor(
@@ -33,7 +32,7 @@ export class HeadComponent implements OnInit {
         this.isAuth = url.includes('/auth') || !url.includes('/');
         this.isHome = url.includes('/home') || !url.includes('/');
         try {
-          this.isLoading = true
+
           if (isPlatformBrowser(this.platformId)) {
             const user = await this.authService.getUserInfomation()
             if (user) {
@@ -46,9 +45,6 @@ export class HeadComponent implements OnInit {
 
         }
         finally {
-          setTimeout(() => {
-            this.isLoading = false
-          }, 2000);
 
         }
 
