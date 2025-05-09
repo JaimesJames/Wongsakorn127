@@ -75,7 +75,7 @@
       </h2>
     </div>
     <button
-      *ngIf="isEditMode && isLogin"
+      *ngIf="isEditMode && isLogin && !isCreateSet"
       class="underline text-[#D966BC] mt-5"
       (click)="removeSet(selectedValue)"
     >
