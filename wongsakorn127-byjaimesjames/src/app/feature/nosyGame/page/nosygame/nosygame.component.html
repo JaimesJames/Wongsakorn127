@@ -1,5 +1,5 @@
 <main
-  class="w-screen h-screen bg-nosy-game flex flex-col p-10 text-center overflow-hidden transition-all duration-300 justify-start"
+  class="w-screen h-screen bg-nosy-game flex flex-col p-10 text-center overflow-y-scroll transition-all duration-300 justify-start"
   [ngClass]="{ 'pt-[40vh] gap-20': isLoading, 'pt-40 gap-5': !isLoading&&!isEditMode, 'pt-29 gap-3': !isLoading&&isEditMode }"
 >
   <app-credit-badge [isLight]="false" />
