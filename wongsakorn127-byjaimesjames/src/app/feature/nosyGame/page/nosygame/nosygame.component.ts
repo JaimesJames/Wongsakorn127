@@ -76,6 +76,7 @@ export class NosygameComponent implements OnInit {
         this.selectedValue = data[0].id
         this.selectedSetName = this.selectors[0].text
         this.questions = await this.questionService.getQuestionsBySetId(data[0].id) || []
+        this.previousQuestions = []
         this.randomQuestion()
       }
       if (!this.isLogin && this.isEditMode){
