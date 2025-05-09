@@ -55,12 +55,26 @@ export class QuestionEditItemComponent {
       this.questionControl.valueChanges,
       this.levelControl.valueChanges,
     ]).subscribe(([textVal, levelVal]) => {
+
+
+      if (textVal && this.questionControl.value && this.questionControl.value.length > 120) {
+        this.questionControl.setValue(textVal.trim().slice(0, 120), { emitEvent: false });
+      }
+
+      if (levelVal && this.levelControl.value && this.levelControl.value > 99) {
+        this.levelControl.setValue(99, { emitEvent: false });
+      }
+      textVal = this.questionControl.value
+      levelVal = this.levelControl.value
+
       const text = textVal ?? '';
       const level = levelVal ?? 0;
 
       const isTextChanged = text !== this.item.text;
       const isLevelChanged = level !== this.item.level;
       const isChanged = isTextChanged || isLevelChanged;
+      this.isEditing = isChanged;
+      if (!isChanged) return;
 
       this.currentValue.emit(new CurrentValue(
         this.item.id,
@@ -69,7 +83,7 @@ export class QuestionEditItemComponent {
         isChanged)
       );
 
-      this.isEditing = isChanged;
+      
 
     });
 

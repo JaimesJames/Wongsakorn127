@@ -157,7 +157,6 @@ export class EditListComponent {
     }
 
     checkCreate(item: CurrentValue) {
-        console.log(item)
         const idList = this.updateCreateList.map(e => e.id)
         if (!idList.includes(item.id) && item.isEditing) {
             this.updateCreateList.push(new QuestionsText(item.id, item.level, item.text));
