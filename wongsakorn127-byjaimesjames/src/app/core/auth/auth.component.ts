@@ -79,15 +79,15 @@ export class AuthComponent implements OnInit {
         }
       }
     } catch (error) {
-      this.Message = 'Registration failed. Please try again later.';
+      this.Message = 'Registration failed. The email is already Exist or incorrect';
     }
   }
 
   async login() {
     try {
       if (this.loginForm.valid) {
-        const email = this.registerForm.get('email')?.value;
-        const password = this.registerForm.get('password')?.value;
+        const email = this.loginForm.get('email')?.value;
+        const password = this.loginForm.get('password')?.value;
         const user = await this.authService.loginWithWSKAccount(email, password)
         if (user) {
           window.location.reload()
