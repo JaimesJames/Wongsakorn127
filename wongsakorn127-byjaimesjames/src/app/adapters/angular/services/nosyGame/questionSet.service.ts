@@ -1,12 +1,12 @@
 import { Injectable } from "@angular/core";
-import { QuestionSetRepositoryFirebase } from "../../../../../infrastucture/firebase/nosyGame/QuestionSetRepositoryFirebase";
-import { AuthRepositoryFirebase } from "../../../../../infrastucture/firebase/auth/AuthRepositoryFirebase";
+import { QuestionSetRepositoryFirebase } from "../../../../../infrastructure/firebase/nosyGame/QuestionSetRepositoryFirebase";
+import { AuthRepositoryFirebase } from "../../../../../infrastructure/firebase/auth/AuthRepositoryFirebase";
 import { GetAllQuestionSets } from "../../../../../application/nosyGame/GetAllQuestionSetName";
 import { QuestionSet } from "../../../../../core/nosyGame/entities/QuestionSet";
 import { GetQuestionsBySetId } from "../../../../../application/nosyGame/GetQuestionsBySetId";
 import { QuestionsText } from "../../../../../core/nosyGame/entities/QuestionsText";
 import { AddInitializerSet } from "../../../../../application/nosyGame/AddInitializerSet";
-import { createQuestionSet } from "../../../../../application/nosyGame/CreateQuestionSet";
+import { CreateQuestionSet } from "../../../../../application/nosyGame/CreateQuestionSet";
 import { QuestionDetail } from "../../../../../core/nosyGame/entities/QuestionDetail";
 import { DeleteQuestionSet } from "../../../../../application/nosyGame/DeleteQuestionSet";
 import { SubmitRequestSet } from "../../../../../application/nosyGame/SubmitRequestSet";
@@ -33,7 +33,7 @@ export class QuestionSetService {
     }
 
     async createQuestionSet(setName: string, questions: QuestionDetail[]): Promise<void> {
-        const useCase = new createQuestionSet(this.QuestionsRepo)
+        const useCase = new CreateQuestionSet(this.QuestionsRepo)
         return await useCase.execute({setName, questions})
     }
 

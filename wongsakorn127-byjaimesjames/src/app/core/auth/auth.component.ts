@@ -4,7 +4,8 @@ import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModu
 import { Router } from '@angular/router';
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
 import { CreditBadgeComponent } from '../../share/components/badges/creditBadge/creditBadge.component';
-import { AuthService } from '../../adapters/angular/routers/auth/auth.service';
+import { AuthService } from '../../adapters/angular/services/auth/auth.service';
+import { getFirebaseUserMessage } from '../../../infrastructure/firebase/firebaseError';
 
 
 @Component({
@@ -79,7 +80,7 @@ export class AuthComponent implements OnInit {
         }
       }
     } catch (error) {
-      this.Message = 'Registration failed. The email is already Exist or incorrect';
+      this.Message = getFirebaseUserMessage(error);
     }
   }
 
@@ -94,7 +95,7 @@ export class AuthComponent implements OnInit {
         }
       }
     } catch (error) {
-      this.Message = 'email or password wrong';
+      this.Message = getFirebaseUserMessage(error);
     }
   }
 
@@ -105,7 +106,7 @@ export class AuthComponent implements OnInit {
         window.location.reload()
       }
     } catch (error) {
-
+      this.Message = getFirebaseUserMessage(error);
     }
   }
 

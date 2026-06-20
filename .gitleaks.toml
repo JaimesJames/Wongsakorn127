@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Firebase web API key is a public client identifier restricted by Firebase rules."
+regexTarget = "match"
+regexes = [
+  '''AIzaSyBq76HyCEO7KqEvL78VSz_3QOSLqDRrrxY''',
+]

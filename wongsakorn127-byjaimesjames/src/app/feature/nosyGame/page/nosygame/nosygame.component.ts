@@ -9,8 +9,9 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from '../../../../share/components/dialog/confirmDialog.component';
 import { InitialLoadingComponent } from '../../../../share/components/loading/initialLoading.component';
-import { AuthService } from '../../../../adapters/angular/routers/auth/auth.service';
-import { QuestionSetService } from '../../../../adapters/angular/routers/nosyGame/questionSet.service';
+import { AuthService } from '../../../../adapters/angular/services/auth/auth.service';
+import { QuestionSetService } from '../../../../adapters/angular/services/nosyGame/questionSet.service';
+import { getFirebaseUserMessage } from '../../../../../infrastructure/firebase/firebaseError';
 
 @Component({
   selector: 'app-nosygame',
@@ -50,7 +51,8 @@ export class NosygameComponent implements OnInit {
 
   isLoading: boolean = true;
 
-  isLogin:boolean = false
+  isLogin: boolean = false
+  errorMessage: string = ''
 
   async ngOnInit() {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -59,13 +61,15 @@ export class NosygameComponent implements OnInit {
     this.isEditMode = currentMode === 'edit'
 
     this.isLoading = true;
+    this.errorMessage = '';
+    this.isLogin = false;
 
     try {
       const user = await this.authService.getCurrentUser()
-      if(user) this.isLogin = true
+      this.isLogin = !!user
 
       const data = await this.questionService.getAllQuestionSetName();
-      if (data) {
+      if (data.length > 0) {
         this.selectors = data.map((e) => {
           return {
             sequence: 0,
@@ -78,12 +82,20 @@ export class NosygameComponent implements OnInit {
         this.questions = await this.questionService.getQuestionsBySetId(data[0].id) || []
         this.previousQuestions = []
         if (!this.isEditMode) this.randomQuestion()
+      } else {
+        this.selectors = [];
+        this.selectedValue = '';
+        this.selectedSetName = '';
+        this.questions = [];
+        this.previousQuestions = [];
+        this.selectedQuestion = new QuestionsText('', 0, '');
       }
-      if (!this.isLogin && this.isEditMode){
-        this.router.navigate(['/nosy-game'])
+      if (!this.isLogin && this.isEditMode) {
+        await this.router.navigate(['/nosy-game'], { queryParams: { mode: 'game' } })
       }
     } catch (error) {
       console.error("Error loading data", error);
+      this.errorMessage = getFirebaseUserMessage(error);
 
     } finally {
       setTimeout(() => {
@@ -94,6 +106,7 @@ export class NosygameComponent implements OnInit {
   }
   async onDropdownSelected(item: { value: string, text: string }) {
     try {
+      this.errorMessage = '';
       this.selectedValue = item.value;
       this.questions = await this.questionService.getQuestionsBySetId(this.selectedValue) || []
       this.selectedSetName = item.text
@@ -101,12 +114,16 @@ export class NosygameComponent implements OnInit {
       if (!this.isEditMode) this.randomQuestion()
     } catch (error) {
       console.error('An error occurred while processing the selection:', error);
-    } finally{
-
+      this.errorMessage = getFirebaseUserMessage(error);
     }
   }
 
   randomQuestion() {
+    if (this.questions.length === 0 && this.previousQuestions.length === 0) {
+      this.selectedQuestion = new QuestionsText('', 0, '');
+      return;
+    }
+
     if (this.questions.length > 0) {
       const randomIndex = Math.floor(Math.random() * this.questions.length);
       this.selectedQuestion = this.questions[randomIndex];
@@ -125,7 +142,7 @@ export class NosygameComponent implements OnInit {
     const currentMode = this.route.snapshot.queryParamMap.get('mode') || 'game';
 
     if (currentMode === "edit") {
-      const isEditing = this.editList.isEnableSave
+      const isEditing = this.editList?.isEnableSave
       if (isEditing) {
         const confirmed = await this.confirmDialog.open(
           'Exit Edit Mode',
@@ -136,29 +153,28 @@ export class NosygameComponent implements OnInit {
         }
       }
     }
-    this.ngOnInit()
-    this.router.navigate(['/nosy-game'], {
+    await this.router.navigate(['/nosy-game'], {
       queryParams: { mode: currentMode === "game" ? "edit" : "game" }
     })
-    this.questions = await this.questionService.getQuestionsBySetId(this.selectedValue) || []
-    this.isEditMode = !this.isEditMode
+    await this.ngOnInit()
   }
 
   async sendRequest(request: RequestSet) {
     try {
+      this.errorMessage = '';
       if (this.isCreateSet) {
         await this.questionService.createQuestionSet(request.setName, request.createList)
-        window.location.href = '/nosy-game';
       }
       else {
-        
         await this.questionService.submitRequestSet(this.selectedValue, request)
-        window.location.reload();
       }
+      this.isCreateSet = false;
+      await this.router.navigate(['/nosy-game'], { queryParams: { mode: 'game' } });
+      await this.ngOnInit();
     }
     catch (error) {
-
-    } finally{
+      console.error('Could not save question set request', error);
+      this.errorMessage = getFirebaseUserMessage(error);
     }
 
   }
@@ -173,10 +189,11 @@ export class NosygameComponent implements OnInit {
         return
       }
       await this.questionService.deleteQuestionSet(setId)
-      window.location.href = '/nosy-game';
+      await this.router.navigate(['/nosy-game'], { queryParams: { mode: 'game' } });
+      await this.ngOnInit();
     } catch (error) {
-
-    } finally{
+      console.error('Could not remove question set', error);
+      this.errorMessage = getFirebaseUserMessage(error);
     }
 
   }

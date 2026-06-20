@@ -1,9 +1,11 @@
-import { Auth, createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, signOut, User } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, User } from "firebase/auth";
 import { AuthUser } from "../../../core/auth/entities/AuthUser";
 import { AuthPort } from "../../../core/auth/repositories/AuthRepository";
+import { auth } from "../firebase";
+import { toFirebaseAppError } from "../firebaseError";
 
 export class AuthRepositoryFirebase implements AuthPort {
-    private auth = getAuth()
+    private auth = auth
 
     async logOut(): Promise<void> {
         return await signOut(this.auth)
@@ -29,10 +31,8 @@ export class AuthRepositoryFirebase implements AuthPort {
                 email: user.email ?? '',
                 photoURL: user.photoURL || null
             }
-        } catch (error: any) {
-            const errorMessage = error.message ?? 'Unknown error occurred during get WSK account';
-            const errorCode = error.code ?? 'unknown';
-            throw new Error(`get WSK account failed: [${errorCode}] ${errorMessage}`);
+        } catch (error) {
+            throw toFirebaseAppError(error, 'Could not get current user');
         }
     }
     async registerWithWSKAccount(username: string, email: string, password: string): Promise<AuthUser> {
@@ -47,10 +47,8 @@ export class AuthRepositoryFirebase implements AuthPort {
                 email: user.email ?? '',
                 photoURL: user.photoURL ?? ''
             }
-        } catch (error: any) {
-            const errorMessage = error.message ?? 'Unknown error occurred during WSK account register';
-            const errorCode = error.code ?? 'unknown';
-            throw new Error(`WSK account register failed: [${errorCode}] ${errorMessage}`);
+        } catch (error) {
+            throw toFirebaseAppError(error, 'Could not register WSK account');
         }
     }
     async loginWithWSKAccount(email: string, password: string): Promise<AuthUser> {
@@ -65,10 +63,8 @@ export class AuthRepositoryFirebase implements AuthPort {
                 email: user.email ?? '',
                 photoURL: user.photoURL ?? ''
             }
-        } catch (error: any) {
-            const errorMessage = error.message ?? 'Unknown error occurred during WSK account log-in';
-            const errorCode = error.code ?? 'unknown';
-            throw new Error(`WSK account log-in failed: [${errorCode}] ${errorMessage}`);
+        } catch (error) {
+            throw toFirebaseAppError(error, 'Could not log in with WSK account');
         }
 
     }
@@ -85,10 +81,8 @@ export class AuthRepositoryFirebase implements AuthPort {
                 email: user.email ?? '',
                 photoURL: user.photoURL ?? ''
             }
-        } catch (error: any) {
-            const errorMessage = error.message ?? 'Unknown error occurred during Google sign-in';
-            const errorCode = error.code ?? 'unknown';
-            throw new Error(`Google Sign-In failed: [${errorCode}] ${errorMessage}`);
+        } catch (error) {
+            throw toFirebaseAppError(error, 'Could not sign in with Google');
         }
 
     }
