@@ -34,3 +34,17 @@ The app does not currently use Phone Auth, Cloud Functions, Firebase App Hosting
 - No client can write initializer data.
 - Signed-in users can read/write only their own `users/{uid}` tree.
 - Users cannot delete their root user document from the client.
+
+## Emulator rules tests
+
+Firestore rules are tested against the local Firebase Emulator with a demo project
+ID, so the suite cannot access production resources:
+
+```bash
+npm run test:rules
+```
+
+The suite requires Java 21 and covers public initializer reads, denied initializer
+writes, guest isolation, owner CRUD operations, cross-user isolation, root-user
+deletion, and default-deny behavior. GitHub Actions installs Java 21 and runs these
+tests for every pull request and production quality gate.
