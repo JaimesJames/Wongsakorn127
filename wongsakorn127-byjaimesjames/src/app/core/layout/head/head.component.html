@@ -1,43 +1,50 @@
 <div (click)="toggle = !toggle" [ngClass]="{'bg-dark-bg/30 fixed left-0 top-0 w-screen h-screen': toggle}"></div>
-<header
-  *ngIf="!isAuth && !isLoading"
-  class="justify-end h-10 fixed top-0 mt-10 flexitems-center left-1/2 -translate-x-1/2 z-9"
->
-  <button
-    *ngIf="!isLoging"
-    (click)="router.navigate(['/auth'])"
+@if (!isAuth && !isLoading) {
+  <header
+    class="justify-end h-10 fixed top-0 mt-10 flexitems-center left-1/2 -translate-x-1/2 z-9"
+    >
+    @if (!isLoging) {
+      <button
+        (click)="router.navigate(['/auth'])"
     [ngClass]="{
       'border-light-bg text-light-bg': !isHome,
       'border-dark-bg text-dark-bg': isHome
     }"
-    class="px-3 py-1 border-2 rounded-full font-semibold hover:cursor-pointer"
-  >
-    Log in
-  </button>
-  <div class="relative">
-    <button
-      (click)="toggle = !toggle"
-      *ngIf="isLoging"
-      class="relative w-12 aspect-square rounded-full hover:cursor-pointer"
-    >
-      <img
-        [src]="userProfile ? userProfile : 'profile-1.png'"
-        class="border-2 border-light-bg rounded-full"
-      />
-    </button>
-    <div
-      *ngIf="toggle"
-      class="absolute flex flex-col p-3 py-5 gap-4 bg-light-bg rounded-xl right-1/2 translate-x-1/2 w-40 text-center"
-    >
-      <h3 *ngIf="isLoging">{{ username }} </h3>
-      <hr class="opacity-30">
-      <button
-        *ngIf="isLoging"
-        (click)="logOutBtn()"
-        class=" bg-light-bg rounded-full font-semibold w-full hover:cursor-pointer"
-      >
-        Log out
+        class="px-3 py-1 border-2 rounded-full font-semibold hover:cursor-pointer"
+        >
+        Log in
       </button>
-    </div>
-  </div>
-</header>
+    }
+    <div class="relative">
+      @if (isLoging) {
+        <button
+          (click)="toggle = !toggle"
+          class="relative w-12 aspect-square rounded-full hover:cursor-pointer"
+          >
+          <img
+            [src]="userProfile ? userProfile : 'profile-1.png'"
+            class="border-2 border-light-bg rounded-full"
+            />
+          </button>
+        }
+        @if (toggle) {
+          <div
+            class="absolute flex flex-col p-3 py-5 gap-4 bg-light-bg rounded-xl right-1/2 translate-x-1/2 w-40 text-center"
+            >
+            @if (isLoging) {
+              <h3>{{ username }} </h3>
+            }
+            <hr class="opacity-30">
+            @if (isLoging) {
+              <button
+                (click)="logOutBtn()"
+                class=" bg-light-bg rounded-full font-semibold w-full hover:cursor-pointer"
+                >
+                Log out
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </header>
+  }

@@ -1,25 +1,27 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
-    <div *ngIf="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    @if (visible) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div class="bg-white p-6 rounded-4xl shadow-xl w-full max-w-sm">
-            <h2 class="text-lg font-semibold mb-3">{{ title }}</h2>
-            <p class="text-sm text-gray-600 mb-5">{{ message }}</p>
-            <div class="flex justify-center space-x-3">
-                <button (click)="cancel()" class="w-full px-4 py-3 rounded-full border-[#D966BC] hover:border-[#D966BC] border-2 text-[#D966BC] text-sm font-semibold">
-                    Cancel
-                </button>
-                <button (click)="confirm()" class="w-full px-4 py-3 rounded-full bg-nosy-game hover:bg-nosy-game text-white text-sm font-semibold">
-                    Confirm
-                </button>
-            </div>
+          <h2 class="text-lg font-semibold mb-3">{{ title }}</h2>
+          <p class="text-sm text-gray-600 mb-5">{{ message }}</p>
+          <div class="flex justify-center space-x-3">
+            <button (click)="cancel()" class="w-full px-4 py-3 rounded-full border-[#D966BC] hover:border-[#D966BC] border-2 text-[#D966BC] text-sm font-semibold">
+              Cancel
+            </button>
+            <button (click)="confirm()" class="w-full px-4 py-3 rounded-full bg-nosy-game hover:bg-nosy-game text-white text-sm font-semibold">
+              Confirm
+            </button>
+          </div>
         </div>
-    </div>
+      </div>
+    }
     `
 })
 export class ConfirmDialogComponent {

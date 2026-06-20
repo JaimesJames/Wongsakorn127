@@ -17,41 +17,58 @@ import { CurrentValue } from '../../../../core/nosyGame/entities/CurrentValue';
     <app-alert-dialog></app-alert-dialog>
     <app-confirm-dialog></app-confirm-dialog>
     <div class="flex flex-col justify-center items-center gap-2 w-full max-w-[630px] m-auto">
-        <div class="flex justify-center gap-3 my-5 px-4 w-full" [ngClass]="{ '': isCreateNewSet, 'bg-black/10 rounded-full py-2':!isCreateNewSet }">
-            <img *ngIf="!isCreateNewSet" src="/svg/edit-light.svg" class="p-2 w-10" alt="edit-dark" />
-            <textarea 
-            *ngIf="!isCreateNewSet"
+      <div class="flex justify-center gap-3 my-5 px-4 w-full" [ngClass]="{ '': isCreateNewSet, 'bg-black/10 rounded-full py-2':!isCreateNewSet }">
+        @if (!isCreateNewSet) {
+          <img src="/svg/edit-light.svg" class="p-2 w-10" alt="edit-dark" />
+        }
+        @if (!isCreateNewSet) {
+          <textarea
             cdkTextareaAutosize
-                class="text-white font-semibold w-full border-l-2 border-black/10 resize-none focus:outline-none focus:ring-0 text-2xl px-5" 
-                [formControl]="questionSetName"
-            ></textarea>
-            <h2 class="text-white" *ngIf="isCreateNewSet">Type the name and create at least one question!</h2>
+            class="text-white font-semibold w-full border-l-2 border-black/10 resize-none focus:outline-none focus:ring-0 text-2xl px-5"
+            [formControl]="questionSetName"
+          ></textarea>
+        }
+        @if (isCreateNewSet) {
+          <h2 class="text-white">Type the name and create at least one question!</h2>
+        }
+      </div>
+      <button [disabled]="isCreateNewSet" (click)="addingBtn()" [ngClass]="{'border-[#D966BC] w-35':isAdding && !isCreateNewSet, 'border-light-bg w-full':!isAdding && !isCreateNewSet, 'border-light-bg/90 w-70':isCreateNewSet }" class="h-[55px] border-2 rounded-4xl flex justify-center items-center p-4 transition-all duration-200">
+        @if (isCreateNewSet) {
+          <img src="/svg/edit-light.svg" class="p-2 w-10" alt="edit-dark" />
+        }
+        @if (isCreateNewSet) {
+          <textarea cdkTextareaAutosize [formControl]="newQuestionSet" class="text-white w-full border-l-2 border-white/10 focus:outline-none focus:ring-0 h-fit px-5"></textarea>
+        }
+        @if (!isCreateNewSet) {
+          <div [ngClass]="{'rotate-45':isAdding}" class="transition-all duration-200">
+            <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_95_195)">
+                <path d="M9.5 0V19" [attr.stroke]="isAdding ? '#D966BC' : '#ffffff'" stroke-width="2"/>
+                <path d="M19 9.5H0" [attr.stroke]="isAdding ? '#D966BC' : '#ffffff'" stroke-width="2"/>
+              </g>
+            </svg>
+          </div>
+        }
+      </button>
+      <hr class="text-light-bg/20 border-1 w-75 flex">
+      <div class="border-3 border-dashed border-light-bg/20 p-3 w-full h-[35vh] rounded-4xl" style="border-spacing: 10px;">
+        <div class="w-full flex flex-col gap-3 overflow-y-scroll h-full hide-scrollbar">
+          @if (isAdding || isCreateNewSet) {
+            <app-question-edit-item [isAdding]="true" [item]="newQuestion()" (submitItem)="addToCreateList($event)"></app-question-edit-item>
+          }
+          @for (question of createList; track trackById($index, question)) {
+            <app-question-edit-item [isAdding]="true" [isAdded]="true" [item]="question" (currentValue)="checkCreate($event)" (submitItem)="removeItem($event.id)"></app-question-edit-item>
+          }
+          @for (question of localQuestions; track trackById($index, question)) {
+            <app-question-edit-item [item]="question" (currentValue)="checkRequest($event)" (submitItem)="checkDelete(question)" [ngClass]="{'hidden':deleteList.includes(question.id) || isCreateNewSet, 'opacity-30 pointer-events-none': isAdding}"></app-question-edit-item>
+          }
         </div>
-        <button [disabled]="isCreateNewSet" (click)="addingBtn()" [ngClass]="{'border-[#D966BC] w-35':isAdding && !isCreateNewSet, 'border-light-bg w-full':!isAdding && !isCreateNewSet, 'border-light-bg/90 w-70':isCreateNewSet }" class="h-[55px] border-2 rounded-4xl flex justify-center items-center p-4 transition-all duration-200">
-            <img *ngIf="isCreateNewSet" src="/svg/edit-light.svg" class="p-2 w-10" alt="edit-dark" />
-            <textarea *ngIf="isCreateNewSet" cdkTextareaAutosize [formControl]="newQuestionSet" class="text-white w-full border-l-2 border-white/10 focus:outline-none focus:ring-0 h-fit px-5"></textarea>
-            <div *ngIf="!isCreateNewSet" [ngClass]="{'rotate-45':isAdding}" class="transition-all duration-200">
-                <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clip-path="url(#clip0_95_195)">
-                        <path d="M9.5 0V19" [attr.stroke]="isAdding ? '#D966BC' : '#ffffff'" stroke-width="2"/> 
-                        <path d="M19 9.5H0" [attr.stroke]="isAdding ? '#D966BC' : '#ffffff'" stroke-width="2"/>
-                    </g>
-                </svg>
-            </div>
-        </button>
-        <hr class="text-light-bg/20 border-1 w-75 flex"> 
-        <div class="border-3 border-dashed border-light-bg/20 p-3 w-full h-[35vh] rounded-4xl" style="border-spacing: 10px;">
-            <div class="w-full flex flex-col gap-3 overflow-y-scroll h-full hide-scrollbar">
-            <app-question-edit-item [isAdding]="true" [item]="newQuestion()" (submitItem)="addToCreateList($event)" *ngIf="isAdding || isCreateNewSet"></app-question-edit-item>
-            <app-question-edit-item [isAdding]="true" [isAdded]="true" *ngFor="let question of createList; trackBy: trackById" [item]="question" (currentValue)="checkCreate($event)" (submitItem)="removeItem($event.id)"></app-question-edit-item>
-                <app-question-edit-item *ngFor="let question of localQuestions; trackBy: trackById" [item]="question" (currentValue)="checkRequest($event)" (submitItem)="checkDelete(question)" [ngClass]="{'hidden':deleteList.includes(question.id) || isCreateNewSet, 'opacity-30 pointer-events-none': isAdding}"></app-question-edit-item>
-            </div>
-        </div>
-        <!-- <p>total: {{total}} Question{{total > 1 ? 's':''}}</p> -->
-        <button (click)="submitRequest()" [disabled]="!isEnableSave" class="w-full h-[46px] rounded-full font-semibold" [ngClass]="{'bg-light-bg': isEnableSave,  'border-2 border-light-bg text-light-bg opacity-40': !isEnableSave}">{{isCreateNewSet?'create new':'save all change'}}</button>
+      </div>
+      <!-- <p>total: {{total}} Question{{total > 1 ? 's':''}}</p> -->
+      <button (click)="submitRequest()" [disabled]="!isEnableSave" class="w-full h-[46px] rounded-full font-semibold" [ngClass]="{'bg-light-bg': isEnableSave,  'border-2 border-light-bg text-light-bg opacity-40': !isEnableSave}">{{isCreateNewSet?'create new':'save all change'}}</button>
     </div>
     
-  `,
+    `,
     styles: `
         .hide-scrollbar::-webkit-scrollbar {
         display: none;

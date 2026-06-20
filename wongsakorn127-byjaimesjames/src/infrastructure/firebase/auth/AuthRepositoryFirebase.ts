@@ -1,10 +1,11 @@
-import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, User } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, User } from "firebase/auth";
 import { AuthUser } from "../../../core/auth/entities/AuthUser";
 import { AuthPort } from "../../../core/auth/repositories/AuthRepository";
+import { auth } from "../firebase";
 import { toFirebaseAppError } from "../firebaseError";
 
 export class AuthRepositoryFirebase implements AuthPort {
-    private auth = getAuth()
+    private auth = auth
 
     async logOut(): Promise<void> {
         return await signOut(this.auth)

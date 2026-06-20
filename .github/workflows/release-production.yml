@@ -1,0 +1,99 @@
+name: Production Release
+
+on:
+  push:
+    tags:
+      - "PRD/v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  validate-release:
+    name: Validate production tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      environment: ${{ steps.tag.outputs.environment }}
+      version: ${{ steps.tag.outputs.version }}
+
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate release tag
+        id: tag
+        working-directory: wongsakorn127-byjaimesjames
+        run: node scripts/validate-release-tag.mjs
+
+      - name: Require release commit on main
+        shell: bash
+        run: |
+          git fetch origin main --no-tags
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Production tags must point to a commit contained in main."
+            exit 1
+          fi
+
+  quality-gate:
+    name: Run quality gate
+    needs: validate-release
+    uses: ./.github/workflows/ci.yml
+
+  deploy-production:
+    name: Deploy to Vercel production
+    needs: [validate-release, quality-gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    defaults:
+      run:
+        working-directory: wongsakorn127-byjaimesjames
+    env:
+      VERCEL_CLI_VERSION: "54.14.2"
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: wongsakorn127-byjaimesjames/package-lock.json
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          test -n "$VERCEL_ORG_ID" || { echo "Missing VERCEL_ORG_ID production secret."; exit 1; }
+          test -n "$VERCEL_PROJECT_ID" || { echo "Missing VERCEL_PROJECT_ID production secret."; exit 1; }
+          test -n "$VERCEL_TOKEN" || { echo "Missing VERCEL_TOKEN production secret."; exit 1; }
+
+      - name: Install pinned Vercel CLI
+        run: npm install --global "vercel@$VERCEL_CLI_VERSION"
+
+      - name: Pull Vercel production settings
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build Vercel artifact
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy production artifact
+        id: deploy
+        shell: bash
+        run: |
+          deployment_url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "Deployed ${{ needs.validate-release.outputs.version }} to $deployment_url"
