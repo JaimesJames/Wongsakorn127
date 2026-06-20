@@ -4,7 +4,7 @@ import { Component, Inject, OnChanges, OnInit, PLATFORM_ID } from '@angular/core
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { ChangeDetectorRef } from '@angular/core';
-import { AuthService } from '../../../adapters/angular/routers/auth/auth.service';
+import { AuthService } from '../../../adapters/angular/services/auth/auth.service';
 
 @Component({
   selector: 'app-head',

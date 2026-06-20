@@ -1,7 +1,7 @@
 import { QuestionDetail } from "../../core/nosyGame/entities/QuestionDetail";
 import { QuestionSetRepository } from "../../core/nosyGame/repositories/QuestionSetRepository";
 
-export class createQuestionSet {
+export class CreateQuestionSet {
     constructor(
         private readonly repo: QuestionSetRepository
     ) { }

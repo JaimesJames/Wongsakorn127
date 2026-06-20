@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { AuthUser } from "../../../../../core/auth/entities/AuthUser";
-import { AuthRepositoryFirebase } from "../../../../../infrastucture/firebase/auth/AuthRepositoryFirebase";
+import { AuthRepositoryFirebase } from "../../../../../infrastructure/firebase/auth/AuthRepositoryFirebase";
 import { loginWithGoogle } from "../../../../../application/auth/loginWithGoogle";
-import { UserRepositoryFirestore } from "../../../../../infrastucture/firebase/auth/UserRepositoryFirestore";
+import { UserRepositoryFirestore } from "../../../../../infrastructure/firebase/auth/UserRepositoryFirestore";
 import { loginWithWSKAccount } from "../../../../../application/auth/loginWithWSKAccount";
 import { registerWithWSKAccount } from "../../../../../application/auth/registerWithWSKAccount";
 import { currentUser } from "../../../../../application/auth/currentUser";

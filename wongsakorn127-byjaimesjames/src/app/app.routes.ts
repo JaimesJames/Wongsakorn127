@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { ParamsGuard } from './guards/params.guard';
-import { CoreGuard } from './guards/core.guard';
 
 export const routes: Routes = [
   {
@@ -15,6 +14,7 @@ export const routes: Routes = [
   {
     path: 'auth',
     loadComponent: () => import('./core/auth/auth.component').then(m => m.AuthComponent),
+    canActivate: [ParamsGuard]
   },
   {
     path: 'nosy-game',

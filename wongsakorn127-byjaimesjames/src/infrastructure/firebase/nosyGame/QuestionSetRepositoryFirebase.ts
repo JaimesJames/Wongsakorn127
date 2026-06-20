@@ -7,45 +7,54 @@ import { QuestionsText } from "../../../core/nosyGame/entities/QuestionsText";
 import { AuthRepositoryFirebase } from "../auth/AuthRepositoryFirebase";
 import { convertDocToQuestions, convertDocToQuestionSet } from "../dto/user.dto";
 import { v4 as uuid } from 'uuid';
+import { FirebaseAppError, toFirebaseAppError } from "../firebaseError";
 
 export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
     constructor(
         private authRepo: AuthRepositoryFirebase,
     ) { }
     async getAllQuestionSetName(): Promise<QuestionSet[]> {
-        const user = await this.authRepo.getCurrentUser()
+        try {
+            const user = await this.authRepo.getCurrentUser()
 
-        if (!user) {
-            const initializerRef = collection(db, 'initializer/game-nosy-game/question-set');
-            const snapshot = await getDocs(initializerRef);
-            return snapshot.docs.map(convertDocToQuestionSet);
+            if (!user) {
+                const initializerRef = collection(db, 'initializer/game-nosy-game/question-set');
+                const snapshot = await getDocs(initializerRef);
+                return snapshot.docs.map(convertDocToQuestionSet);
+            }
+
+            const personalSetRef = collection(db, `users/${user.uid}/games/game-nosy-game/question-set`);
+            const snapshot = await getDocs(personalSetRef);
+            if (snapshot.empty) {
+
+                await this.addInitializerSet([], user.uid)
+            }
+
+            const updatedSnapshot = await getDocs(personalSetRef);
+            return updatedSnapshot.docs.map(convertDocToQuestionSet);
+        } catch (error) {
+            throw toFirebaseAppError(error, 'Could not load question sets');
         }
-
-        const personalSetRef = collection(db, `users/${user.uid}/games/game-nosy-game/question-set`);
-        const snapshot = await getDocs(personalSetRef);
-        if (snapshot.empty) {
-
-            await this.addInitializerSet([], user.uid)
-        }
-
-        const updatedSnapshot = await getDocs(personalSetRef);
-        return updatedSnapshot.docs.map(convertDocToQuestionSet);
     }
     async getQuestionsBySetId(setId: string): Promise<QuestionsText[] | null> {
-        const user = await this.authRepo.getCurrentUser()
-        if (!user) {
-            const defaultRef = collection(db, `initializer/game-nosy-game/question-set/${setId}/questions`);
-            const snapshot = await getDocs(defaultRef);
+        try {
+            const user = await this.authRepo.getCurrentUser()
+            if (!user) {
+                const defaultRef = collection(db, `initializer/game-nosy-game/question-set/${setId}/questions`);
+                const snapshot = await getDocs(defaultRef);
+                return snapshot.docs.map(convertDocToQuestions)
+            }
+            const userRef = collection(db, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions`);
+            const snapshot = await getDocs(userRef);
             return snapshot.docs.map(convertDocToQuestions)
+        } catch (error) {
+            throw toFirebaseAppError(error, 'Could not load questions');
         }
-        const userRef = collection(db, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions`);
-        const snapshot = await getDocs(userRef);
-        return snapshot.docs.map(convertDocToQuestions)
     }
     async addQuestionsToset(setId: string, questions: QuestionDetail[]): Promise<void> {
         try {
             const user = await this.authRepo.getCurrentUser()
-            if (!user) throw new Error('Please log in');
+            if (!user) throw new FirebaseAppError('unauthenticated', 'Please log in');
 
             const batch = writeBatch(db)
 
@@ -62,13 +71,13 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             await batch.commit();
 
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not add questions');
         }
     }
     async createQuestionSet(setName: string, questions: QuestionDetail[]): Promise<void> {
         try {
             const user = await this.authRepo.getCurrentUser()
-            if (!user) throw new Error('Please log in');
+            if (!user) throw new FirebaseAppError('unauthenticated', 'Please log in');
             const questionSetId = uuid();
             const questionSetRef = doc(db, `users/${user.uid}/games/game-nosy-game/question-set/${questionSetId}`);
 
@@ -78,7 +87,7 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             });
             await this.addQuestionsToset(questionSetId, questions)
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not create question set');
         }
     }
     async addInitializerSet(except: string[], userId: string): Promise<void> {
@@ -88,7 +97,6 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
 
             const promises = snapshot.docs.map(async (docSnap) => {
                 if (!except.includes(docSnap.id)) {
-                    console.log(docSnap.id, "ii")
                     const data = docSnap.data()
 
                     const QuestionsRef = collection(db, `initializer/game-nosy-game/question-set/${docSnap.id}/questions`);
@@ -119,13 +127,13 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             await Promise.all(promises)
 
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not copy default question sets');
         }
     }
     async updateQuestions(setId: string, questions: QuestionsText[]): Promise<void> {
         try {
             const user = await this.authRepo.getCurrentUser()
-            if (!user) throw new Error('Please log in');
+            if (!user) throw new FirebaseAppError('unauthenticated', 'Please log in');
 
             const batch = writeBatch(db)
 
@@ -146,13 +154,13 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             await batch.commit();
 
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not update questions');
         }
     }
     async deleteQuestions(setId: string, questionId: string[]): Promise<void> {
         try {
             const user = await this.authRepo.getCurrentUser()
-            if (!user) throw new Error('Please log in');
+            if (!user) throw new FirebaseAppError('unauthenticated', 'Please log in');
 
             const batch = writeBatch(db)
 
@@ -164,13 +172,13 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             await batch.commit();
 
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not delete questions');
         }
     }
     async deleteQuestionSet(setId: string): Promise<void> {
         try {
             const user = await this.authRepo.getCurrentUser()
-            if (!user) throw new Error('Please log in');
+            if (!user) throw new FirebaseAppError('unauthenticated', 'Please log in');
 
             const questionsRef = collection(db, `users/${user.uid}/games/game-nosy-game/question-set/${setId}/questions`);
             const snapshot = await getDocs(questionsRef);
@@ -184,13 +192,13 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             await deleteDoc(questionSetRef);
 
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not delete question set');
         }
     }
     async renameQuestionSet(setId: string, newName: string): Promise<void> {
         try {
             const user = await this.authRepo.getCurrentUser()
-            if (!user) throw new Error('Please log in');
+            if (!user) throw new FirebaseAppError('unauthenticated', 'Please log in');
 
             const questionSetRef = doc(db, `users/${user.uid}/games/game-nosy-game/question-set/${setId}`);
             await setDoc(questionSetRef, {
@@ -199,7 +207,7 @@ export class QuestionSetRepositoryFirebase implements QuestionSetRepository {
             });
 
         } catch (error) {
-            throw new Error("Something went wrong");
+            throw toFirebaseAppError(error, 'Could not rename question set');
         }
     }
 }
