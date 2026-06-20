@@ -30,6 +30,10 @@ yarn-error.log
 
 # Miscellaneous
 /.angular/cache
+/.firebase
+/.firebase-config
+/.vercel
+*-debug.log
 .sass-cache/
 /connect.lock
 /coverage

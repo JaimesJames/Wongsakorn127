@@ -15,7 +15,8 @@ updates:
       firebase:
         patterns:
           - "firebase"
-          - "@angular/fire"
+          - "firebase-tools"
+          - "@firebase/*"
 
   - package-ecosystem: github-actions
     directory: /
