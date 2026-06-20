@@ -47,14 +47,23 @@ jobs:
     uses: ./.github/workflows/ci.yml
 
   deploy-production:
-    name: Deploy to Vercel production
+    name: Deploy Firebase rules and Vercel production
     needs: [validate-release, quality-gate]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      deployment_url: ${{ steps.deploy.outputs.url }}
     environment:
       name: production
       url: ${{ steps.deploy.outputs.url }}
     env:
+      FIREBASE_CLI_VERSION: "15.22.0"
+      FIREBASE_PROJECT_ID: "wongsakorn127-byjaimesjames"
+      FIREBASE_SERVICE_ACCOUNT: ${{ vars.FIREBASE_SERVICE_ACCOUNT }}
+      FIREBASE_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
       VERCEL_CLI_VERSION: "54.14.2"
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -74,9 +83,24 @@ jobs:
       - name: Validate deployment configuration
         shell: bash
         run: |
+          test -n "$FIREBASE_SERVICE_ACCOUNT" || { echo "Missing FIREBASE_SERVICE_ACCOUNT production variable."; exit 1; }
+          test -n "$FIREBASE_WORKLOAD_IDENTITY_PROVIDER" || { echo "Missing FIREBASE_WORKLOAD_IDENTITY_PROVIDER production variable."; exit 1; }
           test -n "$VERCEL_ORG_ID" || { echo "Missing VERCEL_ORG_ID production secret."; exit 1; }
           test -n "$VERCEL_PROJECT_ID" || { echo "Missing VERCEL_PROJECT_ID production secret."; exit 1; }
           test -n "$VERCEL_TOKEN" || { echo "Missing VERCEL_TOKEN production secret."; exit 1; }
+
+      - name: Authenticate to Google Cloud without a service account key
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Install pinned Firebase CLI
+        run: npm install --global "firebase-tools@$FIREBASE_CLI_VERSION"
+
+      - name: Deploy tested Firestore rules
+        working-directory: wongsakorn127-byjaimesjames
+        run: firebase deploy --only firestore:rules --project="$FIREBASE_PROJECT_ID" --non-interactive
 
       - name: Install pinned Vercel CLI
         run: npm install --global "vercel@$VERCEL_CLI_VERSION"
@@ -94,3 +118,58 @@ jobs:
           deployment_url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
           echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
           echo "Deployed ${{ needs.validate-release.outputs.version }} to $deployment_url"
+
+  smoke-test-production:
+    name: Smoke test production deployment
+    needs: [validate-release, deploy-production]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DEPLOYMENT_URL: ${{ needs.deploy-production.outputs.deployment_url }}
+
+    steps:
+      - name: Check public application routes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          check_route() {
+            local route="$1"
+            local body
+            local status
+            body=$(mktemp)
+            status=$(curl --silent --show-error --location \
+              --retry 5 --retry-all-errors --retry-delay 3 \
+              --connect-timeout 10 --max-time 60 \
+              --output "$body" --write-out "%{http_code}" \
+              "${DEPLOYMENT_URL}${route}")
+
+            if [ "$status" != "200" ]; then
+              echo "Smoke test failed for ${route}: HTTP ${status}"
+              cat "$body"
+              exit 1
+            fi
+
+            if ! grep --quiet --ignore-case "<app-root" "$body"; then
+              echo "Smoke test failed for ${route}: Angular app root not found."
+              exit 1
+            fi
+
+            echo "Passed ${route} (HTTP ${status})"
+          }
+
+          check_route "/home"
+          check_route "/auth?mode=login"
+          check_route "/nosy-game?mode=game"
+          check_route "/kinglee-game?mode=game"
+
+      - name: Write release summary
+        shell: bash
+        run: |
+          {
+            echo "## Production release ${{ needs.validate-release.outputs.version }}"
+            echo ""
+            echo "- Firestore rules deployed with keyless GitHub OIDC authentication"
+            echo "- Vercel deployment: ${DEPLOYMENT_URL}"
+            echo "- Public route smoke tests passed"
+          } >> "$GITHUB_STEP_SUMMARY"
