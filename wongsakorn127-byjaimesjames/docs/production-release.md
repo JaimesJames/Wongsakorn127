@@ -49,6 +49,9 @@ In **Settings > Environments**, create `production`:
 - Restrict deployment branches and tags to `PRD/v*`.
 - Add environment secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and
 `VERCEL_PROJECT_ID`.
+- Add environment variable `PRODUCTION_URL` with the public HTTPS production
+  alias, for example `https://example.vercel.app`. Do not use a generated
+  deployment URL because Vercel Deployment Protection can require SSO there.
 - Add environment variables `FIREBASE_SERVICE_ACCOUNT` and
   `FIREBASE_WORKLOAD_IDENTITY_PROVIDER`.
 
