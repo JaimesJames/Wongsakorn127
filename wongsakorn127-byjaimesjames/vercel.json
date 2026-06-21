@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/auth",
+      "destination": "/index.csr.html"
+    },
+    {
+      "source": "/nosy-game",
+      "destination": "/index.csr.html"
+    },
+    {
+      "source": "/kinglee-game",
+      "destination": "/index.csr.html"
+    }
+  ]
+}
