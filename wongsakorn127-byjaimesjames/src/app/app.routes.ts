@@ -25,5 +25,10 @@ export const routes: Routes = [
     path: 'kinglee-game',
     loadComponent: () => import('./feature/kingleeGame/page/kingleegame/kingleegame.component').then(m => m.KingleegameComponent),
     canActivate: [ParamsGuard]
+  },
+  {
+    path: 'spin-it',
+    loadComponent: () => import('./feature/spinitGame/page/spinitgame/spinitgame.component').then(m => m.SpinitgameComponent),
+    canActivate: [ParamsGuard]
   }
 ];
