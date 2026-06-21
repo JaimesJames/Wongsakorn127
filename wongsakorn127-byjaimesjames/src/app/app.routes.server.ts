@@ -11,18 +11,18 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'auth',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: 'nosy-game',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: 'kinglee-game',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: '**',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   }
 ];
