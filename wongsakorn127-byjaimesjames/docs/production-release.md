@@ -11,8 +11,9 @@ can start the Vercel release workflow.
 3. Obtain review approval and merge the pull request.
 4. Create an annotated tag on the chosen `main` commit, such as `PRD/v1.0.1`.
 5. Push the tag. GitHub validates the tag, verifies that its commit belongs to
-   `main`, reruns the full quality gate, waits for production approval, and deploys
-   the prebuilt artifact to Vercel.
+   `main`, reruns the full quality gate, waits for production approval, deploys
+   tested Firestore rules, deploys the prebuilt artifact to Vercel, and smoke-tests
+   the public routes.
 
 Example release commands:
 
@@ -33,7 +34,7 @@ The accepted tag format is exactly `PRD/vMAJOR.MINOR.PATCH`. Tags such as
 In **Settings > Rules > Rulesets**, create a branch ruleset for `main`:
 
 - Require a pull request before merging.
-- Require at least one approval.
+- Require at least one approval when another maintainer is available.
 - Dismiss stale approvals when new commits are pushed.
 - Require status checks to pass.
 - Add `Secret scan`, `Unit tests and production build`, and CodeQL as required checks
@@ -48,6 +49,35 @@ In **Settings > Environments**, create `production`:
 - Restrict deployment branches and tags to `PRD/v*`.
 - Add environment secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and
 `VERCEL_PROJECT_ID`.
+- Add environment variables `FIREBASE_SERVICE_ACCOUNT` and
+  `FIREBASE_WORKLOAD_IDENTITY_PROVIDER`.
+
+### Configure keyless Firebase deployment
+
+Use Google Cloud Workload Identity Federation so GitHub receives short-lived
+credentials. Do not generate or store a service-account JSON key.
+
+1. Open the Google Cloud project `wongsakorn127-byjaimesjames`.
+2. Create a service account named `github-firestore-rules-deployer`.
+3. Grant it **Firebase Rules Admin** and **Firebase Viewer** roles.
+4. In **IAM & Admin > Workload Identity Federation**, create a pool named
+   `github-actions` and an OIDC provider named `wongsakorn127`.
+5. Use issuer `https://token.actions.githubusercontent.com`.
+6. Map `google.subject` to `assertion.sub` and `attribute.repository` to
+   `assertion.repository`.
+7. Restrict the provider with the condition
+   `assertion.repository == 'JaimesJames/Wongsakorn127'`.
+8. Grant the repository principal access to impersonate the service account with
+   the **Workload Identity User** role.
+9. Copy the full provider resource name into the GitHub production environment
+   variable `FIREBASE_WORKLOAD_IDENTITY_PROVIDER`. It has the form
+   `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER`.
+10. Put the service-account email into `FIREBASE_SERVICE_ACCOUNT`.
+
+The production workflow requests `id-token: write` only for the deployment job.
+Pull-request jobs cannot access the production environment or impersonate this
+service account. Firestore rules deploy only after Emulator tests and all other
+quality checks pass.
 
 The Vercel CLI version is pinned in `release-production.yml`. Update that exact
 version deliberately through a pull request after checking `npm view vercel
@@ -71,8 +101,8 @@ build. The GitHub Actions workflow deploys with the Vercel CLI and remains the o
 production path.
 
 Keep the project root set to `wongsakorn127-byjaimesjames` in Vercel. Do not create
-production tags until the GitHub environment, secrets, pinned CLI version, and
-Vercel Git setting have all been configured.
+production tags until the GitHub environment, secrets, Firebase OIDC variables,
+pinned CLI versions, and Vercel Git setting have all been configured.
 
 ## Rollback
 
