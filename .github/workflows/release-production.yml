@@ -101,16 +101,21 @@ jobs:
           echo "production_url=$production_url" >> "$GITHUB_OUTPUT"
 
       - name: Authenticate to Google Cloud without a service account key
+        id: google-auth
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.FIREBASE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
 
       - name: Install pinned Firebase CLI
         run: npm install --global "firebase-tools@$FIREBASE_CLI_VERSION"
 
       - name: Deploy tested Firestore rules
         working-directory: wongsakorn127-byjaimesjames
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google-auth.outputs.credentials_file_path }}
+          GOOGLE_CLOUD_PROJECT: ${{ env.FIREBASE_PROJECT_ID }}
         run: firebase deploy --only firestore:rules --project="$FIREBASE_PROJECT_ID" --non-interactive
 
       - name: Install pinned Vercel CLI
