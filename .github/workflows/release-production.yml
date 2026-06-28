@@ -61,7 +61,6 @@ jobs:
       name: production
       url: ${{ steps.deploy.outputs.url }}
     env:
-      FIREBASE_CLI_VERSION: "15.22.0"
       FIREBASE_PROJECT_ID: "wongsakorn127-byjaimesjames"
       FIREBASE_SERVICE_ACCOUNT: ${{ vars.FIREBASE_SERVICE_ACCOUNT }}
       FIREBASE_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
@@ -101,22 +100,24 @@ jobs:
           echo "production_url=$production_url" >> "$GITHUB_OUTPUT"
 
       - name: Authenticate to Google Cloud without a service account key
-        id: google-auth
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
         with:
           workload_identity_provider: ${{ vars.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.FIREBASE_SERVICE_ACCOUNT }}
           create_credentials_file: true
+          export_environment_variables: true
 
-      - name: Install pinned Firebase CLI
-        run: npm install --global "firebase-tools@$FIREBASE_CLI_VERSION"
+      - name: Install locked Firebase CLI
+        working-directory: wongsakorn127-byjaimesjames
+        run: npm ci --ignore-scripts
 
       - name: Deploy tested Firestore rules
         working-directory: wongsakorn127-byjaimesjames
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google-auth.outputs.credentials_file_path }}
-          GOOGLE_CLOUD_PROJECT: ${{ env.FIREBASE_PROJECT_ID }}
-        run: firebase deploy --only firestore:rules --project="$FIREBASE_PROJECT_ID" --non-interactive
+        shell: bash
+        run: |
+          test -n "$GOOGLE_APPLICATION_CREDENTIALS" || { echo "Missing GOOGLE_APPLICATION_CREDENTIALS."; exit 1; }
+          test -f "$GOOGLE_APPLICATION_CREDENTIALS" || { echo "Google credentials file is missing."; exit 1; }
+          npx --no-install firebase deploy --only firestore:rules --project="$FIREBASE_PROJECT_ID" --non-interactive
 
       - name: Install pinned Vercel CLI
         run: npm install --global "vercel@$VERCEL_CLI_VERSION"
