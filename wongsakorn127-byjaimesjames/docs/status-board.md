@@ -8,7 +8,7 @@ Update this file in the same commit whenever a ticket's status changes on the bo
 _(none)_
 
 ## In Progress
-- WSK127-009 [Full] XO game special mechanics (skills/cards)
+- WSK127-010 [Full] Bomb game (wasabi roulette, base)
 
 ## Done
 - WSK127-001 [Full] Nosy Game first spin
@@ -19,3 +19,4 @@ _(none)_
 - WSK127-006 [UxUi/FE] Shared shell for title/nav/profile
 - WSK127-007 [UxUi/FE] Animate title position between page navigations
 - WSK127-008 [Full] XO game (base, no skills)
+- WSK127-009 [Full] XO game special mechanics (skills/cards)

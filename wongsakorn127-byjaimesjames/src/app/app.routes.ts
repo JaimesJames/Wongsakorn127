@@ -39,5 +39,10 @@ export const routes: Routes = [
     path: 'xo-game',
     loadComponent: () => import('./feature/xoGame/page/xogame/xogame.component').then(m => m.XogameComponent),
     canActivate: [ParamsGuard]
+  },
+  {
+    path: 'bomb-game',
+    loadComponent: () => import('./feature/bombGame/page/bombgame/bombgame.component').then(m => m.BombgameComponent),
+    canActivate: [ParamsGuard]
   }
 ];
