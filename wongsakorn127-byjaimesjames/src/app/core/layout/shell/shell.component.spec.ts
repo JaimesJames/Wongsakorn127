@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ShellComponent } from './shell.component';
+import { ShellLayoutService } from './shell-layout.service';
 
 describe('ShellComponent', () => {
   let component: ShellComponent;
   let fixture: ComponentFixture<ShellComponent>;
+  let shellLayout: ShellLayoutService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -13,6 +15,7 @@ describe('ShellComponent', () => {
 
     fixture = TestBed.createComponent(ShellComponent);
     component = fixture.componentInstance;
+    shellLayout = TestBed.inject(ShellLayoutService);
     fixture.detectChanges();
   });
 
@@ -34,10 +37,29 @@ describe('ShellComponent', () => {
     expect(container.classList).not.toContain('justify-start');
   });
 
-  it('passes isLight through to the credit badge', () => {
+  it('does not render its own title badge when top-aligned (global title handles it)', () => {
+    const badge = fixture.nativeElement.querySelector('app-credit-badge');
+    expect(badge).toBeNull();
+  });
+
+  it('renders its own title badge with isLight passthrough when centered', () => {
     component.isLight = true;
+    component.contentAlign = 'center';
     fixture.detectChanges();
     const badge = fixture.nativeElement.querySelector('app-credit-badge h2');
     expect(badge.parentElement.classList).toContain('text-text-bglight');
+  });
+
+  it('sets the shell layout target when top-aligned', () => {
+    component.isLight = true;
+    component.titleOffsetPx = 160;
+    component.ngOnChanges();
+    expect(shellLayout.target()).toEqual({ topOffsetPx: 160, isLight: true, visible: true });
+  });
+
+  it('hides the shell layout target when centered', () => {
+    component.contentAlign = 'center';
+    component.ngOnChanges();
+    expect(shellLayout.target().visible).toBeFalse();
   });
 });
