@@ -16,6 +16,10 @@
             >{{ size }}x{{ size }}</button>
           }
         </div>
+        <label class="flex items-center gap-2 text-lg font-semibold text-white">
+          <input type="checkbox" [checked]="skillsEnabled" (change)="toggleSkills()" />
+          Enable skills
+        </label>
         <button
           type="button"
           (click)="startGame()"
@@ -28,6 +32,40 @@
           <h2 class="text-2xl font-semibold text-white">Turn: {{ currentPlayer }}</h2>
         }
 
+        @if (skillsEnabled && !winner && !isDraw) {
+          <div class="flex flex-col items-center gap-2">
+            <div class="flex gap-3">
+              <button
+                type="button"
+                (click)="selectSkill('block')"
+                [disabled]="skillCharges[currentPlayer].block <= 0"
+                [ngClass]="{
+                  'bg-white text-xo-game': selectedSkill === 'block',
+                  'bg-transparent text-white border-2 border-white': selectedSkill !== 'block'
+                }"
+                class="rounded-full px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              >Block ({{ skillCharges[currentPlayer].block }})</button>
+              <button
+                type="button"
+                (click)="selectSkill('remove')"
+                [disabled]="skillCharges[currentPlayer].remove <= 0"
+                [ngClass]="{
+                  'bg-white text-xo-game': selectedSkill === 'remove',
+                  'bg-transparent text-white border-2 border-white': selectedSkill !== 'remove'
+                }"
+                class="rounded-full px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              >Remove ({{ skillCharges[currentPlayer].remove }})</button>
+            </div>
+            @if (selectedSkill) {
+              <button
+                type="button"
+                (click)="cancelSkill()"
+                class="text-sm text-white underline"
+              >Cancel {{ selectedSkill }}</button>
+            }
+          </div>
+        }
+
         <div
           class="grid gap-2"
           [style.grid-template-columns]="'repeat(' + boardSize + ', minmax(0, 1fr))'"
@@ -36,9 +74,10 @@
             <button
               type="button"
               (click)="playCell($index)"
-              [disabled]="!!cell || !!winner || isDraw"
+              [disabled]="isCellDisabled($index)"
+              [ngClass]="{ 'bg-xo-game/40': isBlocked($index) }"
               class="flex aspect-square w-16 items-center justify-center rounded-xl bg-white text-3xl font-bold text-xo-game disabled:cursor-not-allowed"
-            >{{ cell }}</button>
+            >{{ isBlocked($index) ? '🔒' : cell }}</button>
           }
         </div>
 
