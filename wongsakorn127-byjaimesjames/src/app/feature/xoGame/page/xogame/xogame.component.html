@@ -1,0 +1,68 @@
+<main class="w-screen h-screen bg-xo-game flex flex-col p-10 text-center overflow-y-auto transition-all duration-300">
+  <app-shell [isLight]="false">
+    @if (!gameStarted) {
+      <div class="flex flex-col items-center gap-5">
+        <h2 class="text-3xl font-semibold text-white">Choose board size</h2>
+        <div class="flex gap-3">
+          @for (size of boardSizeOptions; track size) {
+            <button
+              type="button"
+              (click)="selectBoardSize(size)"
+              [ngClass]="{
+                'bg-white text-xo-game': boardSize === size,
+                'bg-transparent text-white border-2 border-white': boardSize !== size
+              }"
+              class="w-16 h-16 rounded-2xl text-xl font-semibold"
+            >{{ size }}x{{ size }}</button>
+          }
+        </div>
+        <button
+          type="button"
+          (click)="startGame()"
+          class="mt-3 rounded-full bg-white px-8 py-3 text-xl font-semibold text-xo-game"
+        >Start</button>
+      </div>
+    } @else {
+      <div class="flex flex-col items-center gap-5">
+        @if (!winner && !isDraw) {
+          <h2 class="text-2xl font-semibold text-white">Turn: {{ currentPlayer }}</h2>
+        }
+
+        <div
+          class="grid gap-2"
+          [style.grid-template-columns]="'repeat(' + boardSize + ', minmax(0, 1fr))'"
+        >
+          @for (cell of board; track $index) {
+            <button
+              type="button"
+              (click)="playCell($index)"
+              [disabled]="!!cell || !!winner || isDraw"
+              class="flex aspect-square w-16 items-center justify-center rounded-xl bg-white text-3xl font-bold text-xo-game disabled:cursor-not-allowed"
+            >{{ cell }}</button>
+          }
+        </div>
+
+        @if (winner) {
+          <p class="text-2xl font-semibold text-white">{{ winner }} wins!</p>
+        } @else if (isDraw) {
+          <p class="text-2xl font-semibold text-white">Draw!</p>
+        }
+
+        @if (winner || isDraw) {
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="playAgain()"
+              class="rounded-full bg-white px-6 py-2 text-lg font-semibold text-xo-game"
+            >Play again</button>
+            <button
+              type="button"
+              (click)="changeBoardSize()"
+              class="rounded-full border-2 border-white px-6 py-2 text-lg font-semibold text-white"
+            >Change size</button>
+          </div>
+        }
+      </div>
+    }
+  </app-shell>
+</main>
