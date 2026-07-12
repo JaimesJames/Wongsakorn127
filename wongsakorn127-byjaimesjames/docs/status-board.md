@@ -5,10 +5,10 @@ Kanban: https://github.com/users/JaimesJames/projects/1
 Update this file in the same commit whenever a ticket's status changes on the board.
 
 ## Todo
-- WSK127-009 [Full] XO game special mechanics (skills/cards)
+_(none)_
 
 ## In Progress
-- WSK127-008 [Full] XO game (base, no skills)
+- WSK127-009 [Full] XO game special mechanics (skills/cards)
 
 ## Done
 - WSK127-001 [Full] Nosy Game first spin
@@ -18,3 +18,4 @@ Update this file in the same commit whenever a ticket's status changes on the bo
 - WSK127-005 [Bug] Dependabot angular PRs conflict with each other
 - WSK127-006 [UxUi/FE] Shared shell for title/nav/profile
 - WSK127-007 [UxUi/FE] Animate title position between page navigations
+- WSK127-008 [Full] XO game (base, no skills)
