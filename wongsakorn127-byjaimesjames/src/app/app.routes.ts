@@ -34,5 +34,10 @@ export const routes: Routes = [
   {
     path: 'legal',
     loadComponent: () => import('./feature/legal/page/legal.component').then(m => m.LegalComponent),
+  },
+  {
+    path: 'xo-game',
+    loadComponent: () => import('./feature/xoGame/page/xogame/xogame.component').then(m => m.XogameComponent),
+    canActivate: [ParamsGuard]
   }
 ];
