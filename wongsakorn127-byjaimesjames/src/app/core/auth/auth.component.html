@@ -76,8 +76,18 @@
                   >
                   * Passwords do not match.
                 </div>
+                <label class="flex items-center gap-2 text-sm text-start px-5 text-text-bglight">
+                  <input type="checkbox" formControlName="agreeToTerms" />
+                  <span>
+                    I agree to the
+                    <a [routerLink]="['/legal']" target="_blank" class="underline">Privacy Policy</a>
+                    and
+                    <a [routerLink]="['/legal']" target="_blank" class="underline">Terms &amp; Conditions</a>
+                  </span>
+                </label>
                 <button
                   type="submit"
+                  [disabled]="registerForm.invalid"
         [ngClass]="{
           'opacity-40 font-semibold bg-transparent border-2 border-dark-bg text-dark-bg':
             registerForm.invalid,
@@ -146,6 +156,8 @@
                 <hr />
                 <button
                   (click)="loginWithGoogle()"
+                  [disabled]="isGoogleButtonDisabled"
+                  [ngClass]="{'opacity-40': isGoogleButtonDisabled}"
                   class="flex items-center justify-center gap-3 border-2 border-gray-300 rounded-full w-full p-3 hover:bg-gray-100 hover:cursor-pointer transition text-text-bglight"
                   >
                   <img
@@ -171,6 +183,11 @@
                           />
                         </button>
                       </a>
+                      <footer class="mt-10 text-xs opacity-60 text-text-bglight">
+                        <a [routerLink]="['/legal']" target="_blank" class="underline">Privacy Policy</a>
+                        &middot;
+                        <a [routerLink]="['/legal']" target="_blank" class="underline">Terms &amp; Conditions</a>
+                      </footer>
                     </div>
                   }
                 </main>

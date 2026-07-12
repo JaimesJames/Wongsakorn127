@@ -30,5 +30,9 @@ export const routes: Routes = [
     path: 'spin-it',
     loadComponent: () => import('./feature/spinitGame/page/spinitgame/spinitgame.component').then(m => m.SpinitgameComponent),
     canActivate: [ParamsGuard]
+  },
+  {
+    path: 'legal',
+    loadComponent: () => import('./feature/legal/page/legal.component').then(m => m.LegalComponent),
   }
 ];
