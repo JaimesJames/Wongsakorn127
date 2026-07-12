@@ -17,6 +17,7 @@
     --color-dude-or-there: #B83CF2;
     --color-spinit-game: #7137C8;
     --color-xo-game: #FF6B4A;
+    --color-bomb-game: #16A34A;
 }
 
 /* Spin It owns the popup shell; the package only renders the color plane and hue control. */
