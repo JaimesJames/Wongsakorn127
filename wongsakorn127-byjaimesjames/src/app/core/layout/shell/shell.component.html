@@ -1,0 +1,10 @@
+<div
+  class="flex w-full flex-1 flex-col items-center gap-5"
+  [ngClass]="{
+    'justify-start pt-40': contentAlign === 'top',
+    'justify-center': contentAlign === 'center'
+  }"
+>
+  <app-credit-badge class="z-1" [isLight]="isLight" />
+  <ng-content></ng-content>
+</div>

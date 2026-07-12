@@ -1,8 +1,7 @@
 <main
-  class="w-screen h-screen bg-nosy-game flex flex-col p-10 text-center overflow-y-scroll transition-all duration-300 justify-start"
-  [ngClass]="{ 'pt-[40vh] gap-20': isLoading, 'pt-40 gap-5': !isLoading&&!isEditMode, 'pt-29 gap-3': !isLoading&&isEditMode }"
+  class="w-screen h-screen bg-nosy-game flex flex-col p-10 text-center overflow-y-auto transition-all duration-300"
   >
-  <app-credit-badge [isLight]="false" />
+  <app-shell [isLight]="false">
   <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
   <app-confirm-dialog></app-confirm-dialog>
 
@@ -93,6 +92,7 @@
       }
     </div>
   }
+  </app-shell>
   <img class="absolute h-full top-0 left-0" src="svg/nosy-left.svg" alt="nosy-left">
   <img class="absolute h-full top-0 right-0" src="svg/nosy-right.svg" alt="nosy-right">
 </main>

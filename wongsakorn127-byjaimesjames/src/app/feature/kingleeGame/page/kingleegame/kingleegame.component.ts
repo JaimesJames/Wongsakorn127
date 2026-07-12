@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
+import { ShellComponent } from '../../../../core/layout/shell/shell.component';
 import { InitialLoadingComponent } from '../../../../share/components/loading/initialLoading.component';
 import { ConfirmDialogComponent } from '../../../../share/components/dialog/confirmDialog.component';
 import { DeckComponent } from '../../components/deck.component';
@@ -10,7 +10,7 @@ import { initialCardValue } from '../../services/kingleegame.data';
 
 @Component({
   selector: 'app-kingleegame',
-  imports: [CommonModule, CreditBadgeComponent, InitialLoadingComponent, ConfirmDialogComponent, DeckComponent],
+  imports: [CommonModule, ShellComponent, InitialLoadingComponent, ConfirmDialogComponent, DeckComponent],
   templateUrl: './kingleegame.component.html',
   styleUrl: './kingleegame.component.css',
   standalone: true
