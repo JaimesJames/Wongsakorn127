@@ -12,6 +12,7 @@ updates:
       angular:
         patterns:
           - "@angular/*"
+          - "@angular-devkit/*"
       firebase:
         patterns:
           - "firebase"
