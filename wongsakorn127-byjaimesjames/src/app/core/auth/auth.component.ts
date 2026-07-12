@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
-import { CreditBadgeComponent } from '../../share/components/badges/creditBadge/creditBadge.component';
+import { ShellComponent } from '../layout/shell/shell.component';
 import { AuthService } from '../../adapters/angular/services/auth/auth.service';
 import { getFirebaseUserMessage } from '../../../infrastructure/firebase/firebaseError';
 
@@ -11,7 +11,7 @@ import { getFirebaseUserMessage } from '../../../infrastructure/firebase/firebas
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, InitialLoadingComponent, CreditBadgeComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, InitialLoadingComponent, ShellComponent],
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.css'],
 })

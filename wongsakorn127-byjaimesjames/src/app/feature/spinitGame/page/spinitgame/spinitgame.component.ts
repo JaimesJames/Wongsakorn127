@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { CdkOverlayOrigin, ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ColorPickerDirective } from 'ngx-color-picker';
-import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
+import { ShellComponent } from '../../../../core/layout/shell/shell.component';
 
 @Component({
   selector: 'app-spinitgame',
-  imports: [CommonModule, FormsModule, OverlayModule, DragDropModule, ColorPickerDirective, CreditBadgeComponent],
+  imports: [CommonModule, FormsModule, OverlayModule, DragDropModule, ColorPickerDirective, ShellComponent],
   templateUrl: './spinitgame.component.html',
   styleUrl: './spinitgame.component.css',
   standalone: true

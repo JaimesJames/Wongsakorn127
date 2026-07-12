@@ -1,7 +1,7 @@
 <main
-  class="w-screen max-w-[720px] m-auto h-screen flex flex-col justify-center text-center p-10 gap-2 transition-all duration-300 overflow-y-scroll"
+  class="w-screen max-w-[720px] m-auto h-screen flex flex-col text-center p-10 gap-2 transition-all duration-300 overflow-y-scroll"
   >
-  <app-credit-badge [isLight]="true"></app-credit-badge>
+  <app-shell [isLight]="true" contentAlign="center">
   <app-initial-loading [isLoading]="isLoading"></app-initial-loading>
   @if (!isLoading) {
     <div class="flex flex-col gap-5">
@@ -190,4 +190,5 @@
                       </footer>
                     </div>
                   }
+                  </app-shell>
                 </main>

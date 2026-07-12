@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
-import { CreditBadgeComponent } from '../../../../share/components/badges/creditBadge/creditBadge.component';
+import { ShellComponent } from '../../../../core/layout/shell/shell.component';
 import { selectionBarComponent } from '../../../../share/components/input/selectionBar.component';
 import { QuestionsText } from '../../../../../core/nosyGame/entities/QuestionsText';
 import { RequestSet } from '../../../../../core/nosyGame/entities/RequestSet';
@@ -15,7 +15,7 @@ import { getFirebaseUserMessage } from '../../../../../infrastructure/firebase/f
 
 @Component({
   selector: 'app-nosygame',
-  imports: [CreditBadgeComponent, selectionBarComponent, EditListComponent, CommonModule, RouterModule, ConfirmDialogComponent, InitialLoadingComponent],
+  imports: [ShellComponent, selectionBarComponent, EditListComponent, CommonModule, RouterModule, ConfirmDialogComponent, InitialLoadingComponent],
   templateUrl: './nosygame.component.html',
   styleUrl: './nosygame.component.css',
   standalone: true

@@ -36,14 +36,14 @@
 
 .wheel-area {
   position: relative;
-  width: max(260px, min(82vw, calc(100dvh - var(--bottom-nav-peek) - 340px), 620px));
+  width: max(260px, min(82vw, calc(100dvh - var(--bottom-nav-peek) - 456px), 620px));
   aspect-ratio: 1;
   flex: 0 0 auto;
   transition: width 260ms ease, transform 260ms ease;
 }
 
 .settings-open .wheel-area {
-  width: max(260px, min(50vw, calc(100dvh - var(--bottom-nav-peek) - 320px), 560px));
+  width: max(260px, min(50vw, calc(100dvh - var(--bottom-nav-peek) - 436px), 560px));
 }
 
 .wheel {
