@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { InitialLoadingComponent } from '../../share/components/loading/initialLoading.component';
 import { CreditBadgeComponent } from '../../share/components/badges/creditBadge/creditBadge.component';
 import { AuthService } from '../../adapters/angular/services/auth/auth.service';
@@ -11,7 +11,7 @@ import { getFirebaseUserMessage } from '../../../infrastructure/firebase/firebas
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, InitialLoadingComponent, CreditBadgeComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, InitialLoadingComponent, CreditBadgeComponent],
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.css'],
 })
@@ -35,7 +35,8 @@ export class AuthComponent implements OnInit {
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
+      confirmPassword: ['', Validators.required],
+      agreeToTerms: [false, Validators.requiredTrue]
     },
       { validators: this.passwordMatchValidator }
     );
@@ -99,7 +100,14 @@ export class AuthComponent implements OnInit {
     }
   }
 
+  get isGoogleButtonDisabled(): boolean {
+    return !this.isLogin && !this.registerForm.get('agreeToTerms')?.value;
+  }
+
   async loginWithGoogle() {
+    if (this.isGoogleButtonDisabled) {
+      return;
+    }
     try {
       const user = await this.authService.loginWithGoogle()
       if (user) {
@@ -113,5 +121,6 @@ export class AuthComponent implements OnInit {
   toggleMode() {
     this.isLogin = !this.isLogin
     this.Message = ''
+    this.registerForm.get('agreeToTerms')?.setValue(false)
   }
 }
