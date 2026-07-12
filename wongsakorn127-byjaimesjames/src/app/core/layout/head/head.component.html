@@ -23,6 +23,8 @@
           >
           <img
             [src]="userProfile ? userProfile : 'profile-1.png'"
+            referrerpolicy="no-referrer"
+            (error)="onProfileImageError($event)"
             class="border-2 border-light-bg rounded-full"
             />
           </button>

@@ -50,6 +50,14 @@ export class HeadComponent implements OnInit {
 
       });
   }
+  onProfileImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img.src.endsWith('profile-1.png')) {
+      return;
+    }
+    img.src = 'profile-1.png';
+  }
+
   logOutBtn() {
     this.toggle = false
     this.authService.logout().then(() => {
