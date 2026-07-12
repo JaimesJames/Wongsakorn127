@@ -1,3 +1,11 @@
 <router-outlet></router-outlet>
 <app-head></app-head>
 <app-navigator/>
+<div
+  class="fixed left-1/2 z-1 w-full max-w-[720px] -translate-x-1/2 px-10 text-center transition-[top] duration-300 ease-in-out"
+  [style.top.px]="shellTarget().topOffsetPx"
+  [class.opacity-0]="!shellTarget().visible"
+  [class.pointer-events-none]="!shellTarget().visible"
+>
+  <app-credit-badge [isLight]="shellTarget().isLight"></app-credit-badge>
+</div>
